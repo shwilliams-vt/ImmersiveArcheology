@@ -12,7 +12,7 @@ Setup:
 - Download NodeJS
     * Download Redux: npm install @reduxjs/toolkit
     * create app: npx create-react-app my-app --template redux
-    * Install actual redux: npm install redux
+    * Install actual redux in ./my-app/: npm install redux
     * npm start in ./my-app/ to start on localhost:3000
     * modify web server in ./my-app/src
 - Download Firebase: npm install -g firebase-tools
