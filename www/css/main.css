@@ -1,0 +1,41 @@
+body {
+    margin:0;padding:0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height:calc(100vh - 50px);
+}
+
+#main h2 {
+    font-size: 30px;
+}
+
+#main ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+}
+
+#main li {
+    color: #666;
+    background-color: #eee;
+    font-size: 18px;
+    list-style-type: none;
+    margin: 10px;
+}
+
+#main a {
+    text-decoration: none;
+    color:inherit;
+    display: block;
+    padding: 15px;
+}
+
+#main a:hover {
+    background-color: #dedede;
+}
