@@ -11,7 +11,11 @@
     <?php include("./header.php");?>
 
     <div id="form-container">
-        <form id="form_id" onsubmit="return false;">
+        <form id="form_id" style="width:500px" onsubmit="return false;">
+
+            <h2 style="text-align:center">Upload Information</h2>
+            <br/>
+
             <group>
                 <label>Name*:</label><fill></fill><input type="text" name="name"><br>
             </group>
@@ -21,6 +25,8 @@
             <group>
                 <label>Comment*:</label><fill></fill><input type="text" name="comment"><br>
             </group>
+
+            <br/>
             <input type="submit"/>
         </form>
     </div>

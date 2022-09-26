@@ -4,8 +4,9 @@ export default function submitFormPost(phpLink, form, onSuccess, onFailure) {
     // console.log(form)
     const data = new URLSearchParams();
 
-    Array.from(form.children).forEach(child=>{
+    Array.from(form.getElementsByTagName("*")).forEach(child=>{
         // Check if it's an input (TODO add more valid types)
+        console.log(child);
         if (child.tagName.toLowerCase() == "input") {
 
             if (child.type == "text") {

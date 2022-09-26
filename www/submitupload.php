@@ -23,9 +23,9 @@ if (!(isset($_POST['name']) && isset($_POST['email']) && isset($_POST['comment']
 else {
 
     $id = NULL;
-    $name = $_POST['name']; 
-    $email = $_POST['email']; 
-    $comment = $_POST['comment'];  
+    $name = htmlspecialchars($_POST['name']); 
+    $email = htmlspecialchars($_POST['email']); 
+    $comment = htmlspecialchars($_POST['comment']);  
     
     $qry = "INSERT INTO `{$dbTableName}` (`id`, `name`, `email`, `comment`) 
         VALUES (NULL, '{$name}', '{$email}', '{$comment}');";

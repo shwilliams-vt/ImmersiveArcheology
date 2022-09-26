@@ -9,5 +9,20 @@
 </head>
 <body>
     <?php include("./header.php");?>
+
+    <div id="showcase"></div>
 </body>
 </html>
+
+<script type="module">
+
+    import submitGet from "./js/submitget.js";
+
+    submitGet(
+        "./download.php", 
+        [], 
+        (t)=>{document.querySelector("#showcase").innerHTML = t},
+        (t)=>{document.querySelector("#showcase").innerHTML = t}
+    );
+
+</script>

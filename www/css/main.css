@@ -42,29 +42,37 @@ body {
 
 
 #form-container {
-    flex-basis:100%;
+    display: flex;
     height:calc(100vh - 50px);
     padding: 50px;
     align-items: center;
     justify-content: center;
 }
 form {
-    flex-basis:100%;
     padding: 20px;
     display: flex;
     border: 3px solid #aaa;
     flex-direction: column;
     box-sizing: border-box;
+
+    font-size: large!important;
 }
 form group {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width:100%;
 }
-fill {
-    flex: auto;
-    width:100px;
+form > * {
+    margin: 5px 0;
 }
-form p input {
-    width: 100%;
+fill {
+    flex: 1 1 30px;
+}
+form input[type="text"] {
+    padding: 10px!important;
+    width: 50%;
+}
+form input[type="submit"] {
+    padding: 10px!important;
 }
