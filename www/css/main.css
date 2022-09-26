@@ -39,3 +39,32 @@ body {
 #main a:hover {
     background-color: #dedede;
 }
+
+
+#form-container {
+    flex-basis:100%;
+    height:calc(100vh - 50px);
+    padding: 50px;
+    align-items: center;
+    justify-content: center;
+}
+form {
+    flex-basis:100%;
+    padding: 20px;
+    display: flex;
+    border: 3px solid #aaa;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+form group {
+    display: flex;
+    justify-content: space-between;
+    width:100%;
+}
+fill {
+    flex: auto;
+    width:100px;
+}
+form p input {
+    width: 100%;
+}

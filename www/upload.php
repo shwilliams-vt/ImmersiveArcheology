@@ -9,5 +9,36 @@
 </head>
 <body>
     <?php include("./header.php");?>
+
+    <div id="form-container">
+        <form id="form_id" onsubmit="return false;">
+            <group>
+                <label>Name*:</label><fill></fill><input type="text" name="name"><br>
+            </group>
+            <group>
+                <label>E-mail*:</label><fill></fill><input type="text" name="email"><br>
+            </group>
+            <group>
+                <label>Comment*:</label><fill></fill><input type="text" name="comment"><br>
+            </group>
+            <input type="submit"/>
+        </form>
+    </div>
 </body>
 </html>
+
+<script type="module">
+
+    import submitFormPost from "./js/submitpost.js"
+
+    let form = document.querySelector("#form_id");
+    form.addEventListener("submit", function() {
+            submitFormPost(
+                "./submitupload.php", 
+                form, 
+                (response)=>console.log(response), 
+                (response)=>console.log(response)
+            );
+        return false;
+    });
+</script>
