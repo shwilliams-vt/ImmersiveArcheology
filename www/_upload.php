@@ -17,13 +17,10 @@
             <br/>
 
             <group>
-                <label>Artifact ID*:</label><fill></fill><input type="text" name="id"><br>
+                <label>Name*:</label><fill></fill><input type="text" name="name"><br>
             </group>
             <group>
-                <label>Artifact Title*:</label><fill></fill><input type="text" name="title"><br>
-            </group>
-            <group>
-
+                <label>E-mail*:</label><fill></fill><input type="text" name="email"><br>
             </group>
             <group>
                 <label>Comment*:</label><fill></fill><input type="text" name="comment"><br>
@@ -54,7 +51,7 @@
 
         // Sumbit post request
         submitFormPost(
-            "./submitartifactupload.php", 
+            "./_submitupload.php", 
             form, 
             (response)=>log(response), 
             (response)=>log(response)

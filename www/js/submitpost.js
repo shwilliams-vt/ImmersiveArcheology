@@ -2,7 +2,7 @@ export default function submitFormPost(phpLink, form, onSuccess, onFailure) {
 
     // 1. Parse form
     // console.log(form)
-    const data = new URLSearchParams();
+    const data = new FormData();
 
     Array.from(form.getElementsByTagName("*")).forEach(child=>{
         // Check if it's an input (TODO add more valid types)
