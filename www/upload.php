@@ -28,6 +28,8 @@
 
             <br/>
             <input type="submit"/>
+
+            <p id="message"></p>
         </form>
     </div>
 </body>
@@ -37,14 +39,23 @@
 
     import submitFormPost from "./js/submitpost.js"
 
+    function log(text) {
+        document.querySelector("#message").innerHTML = text;
+    }
+
     let form = document.querySelector("#form_id");
     form.addEventListener("submit", function() {
-            submitFormPost(
-                "./submitupload.php", 
-                form, 
-                (response)=>console.log(response), 
-                (response)=>console.log(response)
-            );
+
+        // Show loading
+        log("Loading...");
+
+        // Sumbit post request
+        submitFormPost(
+            "./submitupload.php", 
+            form, 
+            (response)=>log(response), 
+            (response)=>log(response)
+        );
         return false;
     });
 </script>

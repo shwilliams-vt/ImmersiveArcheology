@@ -11,8 +11,7 @@ $connection = mysqli_connect($dbServername, $dbUsername, $dbPassword, $dbName);
 if (!$connection) {
     $error_msg = "Could not connect to the database/invalid credentials.";
 }
-
-if (!(isset($_POST['name']) && isset($_POST['email']) && isset($_POST['comment']))) {
+else if (!(isset($_POST['name']) && isset($_POST['email']) && isset($_POST['comment']))) {
 
     $isset_name = isset($_POST['name']) ? "true" : "false";
     $isset_email = isset($_POST['email']) ? "true" : "false";
@@ -25,23 +24,29 @@ else {
     $id = NULL;
     $name = htmlspecialchars($_POST['name']); 
     $email = htmlspecialchars($_POST['email']); 
-    $comment = htmlspecialchars($_POST['comment']);  
+    $comment = htmlspecialchars($_POST['comment']); 
     
-    $qry = "INSERT INTO `{$dbTableName}` (`id`, `name`, `email`, `comment`) 
-        VALUES (NULL, '{$name}', '{$email}', '{$comment}');";
-
-
-    $result = mysqli_query($connection, $qry);
-
-    // TODO Verification?
-    if ($result) {
-        header("HTTP/1.1 201");
-        $success = true;
+    if ($name == "" || $email == "" || $comment == "") {
+        $error_msg = "Some required fields are empty";
     }
+
     else {
-        $error_msg = "Query was rejected by the database";
-    }
+    
+        $qry = "INSERT INTO `{$dbTableName}` (`id`, `name`, `email`, `comment`) 
+            VALUES (NULL, '{$name}', '{$email}', '{$comment}');";
 
+
+        $result = mysqli_query($connection, $qry);
+
+        // TODO Verification?
+        if ($result) {
+            header("HTTP/1.1 201");
+            $success = true;
+        }
+        else {
+            $error_msg = "Query was rejected by the database";
+        }
+    }
 }
 
 if (isset($success) && $success == true){ 
