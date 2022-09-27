@@ -23,10 +23,13 @@
                 <label>Artifact Title*:</label><fill></fill><input type="text" name="title"><br>
             </group>
             <group>
-
+                <label>Artifact GLTF*:</label><fill></fill><input type="file" name="model_file"><br>
             </group>
             <group>
-                <label>Comment*:</label><fill></fill><input type="text" name="comment"><br>
+                <label>Date Excavated*:</label><fill></fill><input type="date" name="date"><br>
+            </group>
+            <group>
+                <label>Coordinates*:</label><fill></fill><input type="text" name="location"><br>
             </group>
 
             <br/>

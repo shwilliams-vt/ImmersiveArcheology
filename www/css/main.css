@@ -44,7 +44,6 @@ body {
 #form-container {
     display: flex;
     height:calc(100vh - 50px);
-    padding: 50px;
     align-items: center;
     justify-content: center;
 }
@@ -73,6 +72,13 @@ form input[type="text"] {
     padding: 10px!important;
     width: 50%;
 }
+form input[type="date"] {
+    padding: 10px!important;
+    width: 50%;
+}
 form input[type="submit"] {
     padding: 10px!important;
+}
+form input[type="file"] {
+    padding: 10px 0;
 }

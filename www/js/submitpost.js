@@ -12,6 +12,12 @@ export default function submitFormPost(phpLink, form, onSuccess, onFailure) {
             if (child.type == "text") {
                 data.append(child.name, child.value);
             }
+            else if (child.type == "date") {
+                data.append(child.name, child.value);
+            }
+            else if (child.type == "file") {
+                data.append(child.name, child.files[0]);
+            }
         }
     });
 
