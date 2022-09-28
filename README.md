@@ -18,5 +18,5 @@ Using:
                 - id: PRIMARY_KEY int
                 - title: VARCHAR
                 - model_url: VARCHAR
-                - data_excavated: DATE
+                - date_excavated: DATE
                 - location: VARCHAR

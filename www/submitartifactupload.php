@@ -4,47 +4,84 @@ $dbServername = "localhost";
 $dbUsername = "manager";
 $dbPassword = "X6m&T@Evr,[s@,n";
 $dbName = "archeology";
-$dbTableName = "test_table";
+$dbTableName = "artifacts";
+
+$uploadDir = "gltf/artifacts/";
 
 $connection = mysqli_connect($dbServername, $dbUsername, $dbPassword, $dbName);
 
 if (!$connection) {
     $error_msg = "Could not connect to the database/invalid credentials.";
 }
-else if (!(isset($_POST['name']) && isset($_POST['email']) && isset($_POST['comment']))) {
+else if (!(isset($_POST['id']) && isset($_POST['site_id']) && isset($_POST['title']) && isset($_FILES['model_file']) && isset($_POST['date']) && isset($_POST['location']))) {
 
-    $isset_name = isset($_POST['name']) ? "true" : "false";
-    $isset_email = isset($_POST['email']) ? "true" : "false";
-    $isset_comment = isset($_POST['comment']) ? "true" : "false";
 
-    $error_msg = "Some fields are not set: name isset: '{$isset_name}', email isset: '{$isset_email}', comment isset: '{$isset_comment}'";
+    $error_msg = "Some required fields are empty (1)";
 }
 else {
 
-    $id = NULL;
-    $name = htmlspecialchars($_POST['name']); 
-    $email = htmlspecialchars($_POST['email']); 
-    $comment = htmlspecialchars($_POST['comment']); 
+    $valid_id = is_numeric(htmlspecialchars($_POST['id']));
+    $valid_site_id = is_numeric(htmlspecialchars($_POST['site_id']));
+    $id = intval(htmlspecialchars($_POST['id']));
+    $site_id = intval(htmlspecialchars($_POST['site_id']));
+    $title = htmlspecialchars($_POST['title']); 
+    $model_file = htmlspecialchars($_FILES['model_file']['tmp_name']); 
+    $target_file = $uploadDir . htmlspecialchars(basename($_FILES["model_file"]["name"]));
+    $date_time = strtotime(htmlspecialchars($_POST['date']));
+    $location =  htmlspecialchars($_POST['location']);
     
-    if ($name == "" || $email == "" || $comment == "") {
-        $error_msg = "Some required fields are empty";
+    if ($title == "" || $location == "") {
+        $error_msg = "Some required fields are empty (2)";
+    }
+    else if (!$valid_id) {
+        $error_msg = "ID is not numeric";
+    }
+    else if (!$valid_site_id) {
+        $error_msg = "ID is not numeric";
+    }
+    else if (!$date_time) {
+        $error_msg = "Invalid date";
+    }
+    else if (!in_array(strtolower(pathinfo($target_file,PATHINFO_EXTENSION)), array("gltf", "glb", "h"))) {
+        $error_msg = "Invalid file type. Accepted: GLTF, GLB";
     }
 
     else {
-    
-        $qry = "INSERT INTO `{$dbTableName}` (`id`, `name`, `email`, `comment`) 
-            VALUES (NULL, '{$name}', '{$email}', '{$comment}');";
 
+        // Change date time to date
+        $date = date('Y-m-d', $date_time);
 
+        // Check if the artifact exists by checking ID
+        $qry = "SELECT * FROM {$dbTableName} WHERE id='{$id}'";
         $result = mysqli_query($connection, $qry);
-
-        // TODO Verification?
-        if ($result) {
-            header("HTTP/1.1 201");
-            $success = true;
+        if (!$result) {
+            $error_msg = "Query was rejected by the database (1)" . mysqli_error($connection);
+        }
+        else if (mysqli_num_rows($result) > 0) {
+            $error_msg = "This artifact has already been uploaded";
         }
         else {
-            $error_msg = "Query was rejected by the database";
+
+            // Try uploading to the server.
+            if (move_uploaded_file($_FILES["model_file"]["tmp_name"], $target_file)) {
+            
+                $qry = "INSERT INTO `{$dbTableName}` (`id`, `site_id`, `title`, `model_url`, `date_excavated`, `location`) 
+                    VALUES ('{$id}', '{$site_id}', '{$title}', '{$target_file}', '{$date}', '{$location}');";
+
+                $result = mysqli_query($connection, $qry);
+
+                // TODO Verification?
+                if ($result) {
+                    header("HTTP/1.1 201");
+                    $success = true;
+                }
+                else {
+                    $error_msg = "Query was rejected by the database (2)";
+                }
+            }
+            else {
+                $error_msg = "Could not upload file. Try again";
+            }
         }
     }
 }

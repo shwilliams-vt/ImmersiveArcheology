@@ -11,13 +11,16 @@
     <?php include("./header.php");?>
 
     <div id="form-container">
-        <form id="form_id" style="width:500px" onsubmit="return false;">
+        <form id="form_id" style="width:500px" onsubmit="return false;" enctype="multipart/form-data">
 
             <h2 style="text-align:center">Upload Information</h2>
             <br/>
 
             <group>
                 <label>Artifact ID*:</label><fill></fill><input type="text" name="id"><br>
+            </group>
+            <group>
+                <label>Site ID*:</label><fill></fill><input type="text" name="site_id"><br>
             </group>
             <group>
                 <label>Artifact Title*:</label><fill></fill><input type="text" name="title"><br>
