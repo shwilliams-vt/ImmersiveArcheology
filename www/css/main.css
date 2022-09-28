@@ -72,6 +72,12 @@ form input[type="text"] {
     padding: 10px!important;
     width: 50%;
 }
+form textarea {
+    padding: 10px!important;
+    width: 50%;
+    resize:none;
+    height: 80px;
+}
 form input[type="date"] {
     padding: 10px!important;
     width: 50%;

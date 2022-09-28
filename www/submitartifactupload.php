@@ -13,9 +13,7 @@ $connection = mysqli_connect($dbServername, $dbUsername, $dbPassword, $dbName);
 if (!$connection) {
     $error_msg = "Could not connect to the database/invalid credentials.";
 }
-else if (!(isset($_POST['id']) && isset($_POST['site_id']) && isset($_POST['title']) && isset($_FILES['model_file']) && isset($_POST['date']) && isset($_POST['location']))) {
-
-
+else if (!(isset($_POST['id']) && isset($_POST['site_id']) && isset($_POST['title']) && isset($_POST['description']) && isset($_POST['model_url']) && isset($_POST['date']) && isset($_POST['location']))) {
     $error_msg = "Some required fields are empty (1)";
 }
 else {
@@ -25,24 +23,26 @@ else {
     $id = intval(htmlspecialchars($_POST['id']));
     $site_id = intval(htmlspecialchars($_POST['site_id']));
     $title = htmlspecialchars($_POST['title']); 
-    $model_file = htmlspecialchars($_FILES['model_file']['tmp_name']); 
-    $target_file = $uploadDir . htmlspecialchars(basename($_FILES["model_file"]["name"]));
+    $description = htmlspecialchars($_POST['description']);
+    //$model_file = htmlspecialchars($_FILES['model_file']['tmp_name']); 
+    // $target_file = $uploadDir . htmlspecialchars(basename($_FILES["model_file"]["name"]));
+    $model_url = htmlspecialchars($_POST['model_url']); 
     $date_time = strtotime(htmlspecialchars($_POST['date']));
     $location =  htmlspecialchars($_POST['location']);
     
-    if ($title == "" || $location == "") {
+    if ($title == "" || $description == "" || $model_url == "" || $location == "") {
         $error_msg = "Some required fields are empty (2)";
     }
     else if (!$valid_id) {
         $error_msg = "ID is not numeric";
     }
     else if (!$valid_site_id) {
-        $error_msg = "ID is not numeric";
+        $error_msg = "Site ID is not numeric";
     }
     else if (!$date_time) {
         $error_msg = "Invalid date";
     }
-    else if (!in_array(strtolower(pathinfo($target_file,PATHINFO_EXTENSION)), array("gltf", "glb"))) {
+    else if (!in_array(strtolower(pathinfo($model_url,PATHINFO_EXTENSION)), array("gltf", "glb"))) {
         $error_msg = "Invalid file type. Accepted: GLTF, GLB";
     }
 
@@ -62,11 +62,11 @@ else {
         }
         else {
 
-            // Try uploading to the server.
-            if (move_uploaded_file($_FILES["model_file"]["tmp_name"], $target_file)) {
+            // TODO uploading to the server?
+            //if (move_uploaded_file($_FILES["model_file"]["tmp_name"], $target_file)) {
             
-                $qry = "INSERT INTO `{$dbTableName}` (`id`, `site_id`, `title`, `model_url`, `date_excavated`, `location`) 
-                    VALUES ('{$id}', '{$site_id}', '{$title}', '{$target_file}', '{$date}', '{$location}');";
+                $qry = "INSERT INTO `{$dbTableName}` (`id`, `site_id`, `title`, `description`, `model_url`, `date_excavated`, `location`) 
+                    VALUES ('{$id}', '{$site_id}', '{$title}', '{$description}', '{$model_url}', '{$date}', '{$location}');";
 
                 $result = mysqli_query($connection, $qry);
 
@@ -76,12 +76,12 @@ else {
                     $success = true;
                 }
                 else {
-                    $error_msg = "Query was rejected by the database (2)";
+                    $error_msg = "Query was rejected by the database (2)" . mysqli_error($connection);
                 }
-            }
-            else {
-                $error_msg = "Could not upload file. Try again";
-            }
+            // }
+            // else {
+            //     $error_msg = "Could not upload file. Try again";
+            // }
         }
     }
 }

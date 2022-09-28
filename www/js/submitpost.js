@@ -19,6 +19,9 @@ export default function submitFormPost(phpLink, form, onSuccess, onFailure) {
                 data.append(child.name, child.files[0]);
             }
         }
+        else if (child.tagName.toLowerCase() == "textarea") {
+            data.append(child.name, child.value);
+        }
     });
 
     // 2. Submit POST

@@ -16,7 +16,9 @@ Using:
                 - comment: VARCHAR
             - artifacts
                 - id: PRIMARY_KEY int
+                - site_id: VARCHAR
                 - title: VARCHAR
+                - description: VARCHAR
                 - model_url: VARCHAR
                 - date_excavated: DATE
                 - location: VARCHAR

@@ -23,10 +23,16 @@
                 <label>Site ID*:</label><fill></fill><input type="text" name="site_id"><br>
             </group>
             <group>
-                <label>Artifact Title*:</label><fill></fill><input type="text" name="title"><br>
+                <label>Title*:</label><fill></fill><input type="text" name="title"><br>
             </group>
             <group>
+                <label>Description*:</label><fill></fill><textarea name="description"></textarea><br>
+            </group>
+            <!--<group>
                 <label>Artifact GLTF*:</label><fill></fill><input type="file" name="model_file"><br>
+            </group>-->
+            <group>
+            <label>Artifact Model URL*:</label><fill></fill><input type="text" name="model_url"><br>
             </group>
             <group>
                 <label>Date Excavated*:</label><fill></fill><input type="date" name="date"><br>
