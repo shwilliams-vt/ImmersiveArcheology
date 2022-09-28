@@ -42,7 +42,7 @@ else {
     else if (!$date_time) {
         $error_msg = "Invalid date";
     }
-    else if (!in_array(strtolower(pathinfo($target_file,PATHINFO_EXTENSION)), array("gltf", "glb", "h"))) {
+    else if (!in_array(strtolower(pathinfo($target_file,PATHINFO_EXTENSION)), array("gltf", "glb"))) {
         $error_msg = "Invalid file type. Accepted: GLTF, GLB";
     }
 
