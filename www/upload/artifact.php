@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="./css/main.css" rel="stylesheet" />
+    <link href="/css/main.css" rel="stylesheet" />
     <title>Immersive Archeology</title>
 </head>
 <body>
-    <?php include("./header.php");?>
+    <?php include($_SERVER['DOCUMENT_ROOT']."/includes/header.php");?>
 
     <div id="form-container">
         <form id="form_id" style="width:500px" onsubmit="return false;" enctype="multipart/form-data">
 
-            <h2 style="text-align:center">Upload Information</h2>
+            <h2 style="text-align:center">Upload Artifact</h2>
             <br/>
 
             <group>
@@ -52,7 +52,7 @@
 
 <script type="module">
 
-    import submitFormPost from "./js/submitpost.js"
+    import submitFormPost from "/js/submitpost.js"
 
     function log(text) {
         document.querySelector("#message").innerHTML = text;
@@ -66,7 +66,7 @@
 
         // Sumbit post request
         submitFormPost(
-            "./submitartifactupload.php", 
+            "/submitartifactupload.php", 
             form, 
             (response)=>log(response), 
             (response)=>log(response)

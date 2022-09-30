@@ -8,7 +8,7 @@
     <title>Immersive Archeology</title>
 </head>
 <body>
-    <?php include("./header.php");?>
+    <?php include($_SERVER['DOCUMENT_ROOT']."/includes/header.php");?>
 
     <div id="showcase"></div>
 </body>
@@ -16,10 +16,10 @@
 
 <script type="module">
 
-    import submitGet from "./js/submitget.js";
+    import submitGet from "/js/submitget.js";
 
     submitGet(
-        "./download.php", 
+        "/download.php", 
         [], 
         (t)=>{document.querySelector("#showcase").innerHTML = t},
         (t)=>{document.querySelector("#showcase").innerHTML = t}

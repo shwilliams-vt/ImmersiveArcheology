@@ -22,3 +22,10 @@ Using:
                 - model_url: VARCHAR
                 - date_excavated: DATE
                 - location: VARCHAR
+            - dig sites
+                - id: PRIMARY_KEY int
+                - title: VARCHAR
+                - description: VARCHAR
+                - model_url: VARCHAR
+                - date_begin: DATE
+                - date_end: DATE

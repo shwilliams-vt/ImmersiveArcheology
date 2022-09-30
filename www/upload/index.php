@@ -10,11 +10,10 @@
 <body>
     <?php include($_SERVER['DOCUMENT_ROOT']."/includes/header.php");?>
     <div id="main">
-        <h2>Choose your experience</h2>
+        <h2>What are you uploading?</h2>
         <ul>
-            <li><a href="/browse.php">Web Browser</a></li>
-            <li><a href="/xr.php">XR Viewer</a></li>
-            <li><a href="/upload/">Upload Information</a></li>
+            <li><a href="/upload/artifact.php">Artifact</a></li>
+            <li><a href="/upload/dig_site.php">Dig Site</a></li>
         </ul>
     </div>
 </body>
