@@ -4,7 +4,7 @@ $dbServername = "localhost";
 $dbUsername = "manager";
 $dbPassword = "X6m&T@Evr,[s@,n";
 $dbName = "archeology";
-$dbTableName = "test_table";
+$dbTableName = "artifacts";
 
 $connection = mysqli_connect($dbServername, $dbUsername, $dbPassword, $dbName);
 
@@ -32,11 +32,10 @@ if (!$connection) {
         $success = true;
         
         foreach ($result as $row) {
-            echo "<div>";
+            echo "<";
             foreach ($row as $field) {
-                echo $field . ", ";
+                echo $field . ",";
             }
-            echo "</div>";
         }
     }
     else {

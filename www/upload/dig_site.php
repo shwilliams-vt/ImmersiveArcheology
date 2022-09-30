@@ -13,14 +13,11 @@
     <div id="form-container">
         <form id="form_id" style="width:500px" onsubmit="return false;" enctype="multipart/form-data">
 
-            <h2 style="text-align:center">Upload Artifact</h2>
+            <h2 style="text-align:center">Upload Dig Site</h2>
             <br/>
 
             <group>
-                <label>Artifact ID*:</label><fill></fill><input type="text" name="id"><br>
-            </group>
-            <group>
-                <label>Site ID*:</label><fill></fill><input type="text" name="site_id"><br>
+                <label>Site ID*:</label><fill></fill><input type="text" name="id"><br>
             </group>
             <group>
                 <label>Title*:</label><fill></fill><input type="text" name="title"><br>
@@ -29,16 +26,16 @@
                 <label>Description*:</label><fill></fill><textarea name="description"></textarea><br>
             </group>
             <!--<group>
-                <label>Artifact GLTF*:</label><fill></fill><input type="file" name="model_file"><br>
+                <label>Dig Site GLTF*:</label><fill></fill><input type="file" name="model_file"><br>
             </group>-->
             <group>
-            <label>Artifact Model URL*:</label><fill></fill><input type="text" name="model_url"><br>
+            <label>Dig Site Model URL*:</label><fill></fill><input type="text" name="model_url"><br>
             </group>
             <group>
-                <label>Date Excavated*:</label><fill></fill><input type="date" name="date"><br>
+                <label>Date Excavation Began*:</label><fill></fill><input type="date" name="date_started"><br>
             </group>
             <group>
-                <label>Coordinates*:</label><fill></fill><input type="text" name="location"><br>
+                <label>Date Excavation Ended*:</label><fill></fill><input type="date" name="date_ended"><br>
             </group>
 
             <br/>
@@ -66,7 +63,7 @@
 
         // Sumbit post request
         submitFormPost(
-            "/inc/submit_artifact_upload.php", 
+            "/inc/submit_dig_site_upload.php", 
             form, 
             (response)=>log(response), 
             (response)=>log(response)

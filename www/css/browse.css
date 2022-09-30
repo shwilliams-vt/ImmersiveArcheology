@@ -1,0 +1,38 @@
+#showcase {
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+}
+
+#artifact_showcase {
+    margin:20px;
+    width:70vw;
+    max-height:40vh;
+    padding:3px;
+
+    display: table;
+    border-collapse: collapse;
+}
+#artifact_showcase tr {
+    background-color:#eee;
+    padding:3px;
+}
+#artifact_showcase tr > td {
+    padding:3px;
+    background-color:#eee;
+    border-right: 2px solid #ddd;
+    border-bottom: 2px solid #ddd;
+}
+#artifact_showcase tr > th {
+    padding:3px;
+    background-color:#444;
+    border-right: 2px solid #666;
+    color:white;
+    font-weight: 200;
+}
+
+#dig_site_showcase {
+    margin:20px;
+    width:50%;
+    max-height:40vh;
+}
