@@ -9,4 +9,10 @@
 #header a {
     text-decoration: none;
     color: inherit;
+    padding: 0 15px;
+    height:100%;
+    line-height:50px;
+}
+#header a:hover {
+    background-color:#ddd;
 }

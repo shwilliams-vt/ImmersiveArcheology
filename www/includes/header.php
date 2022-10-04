@@ -3,4 +3,5 @@
 </style>
 <div id="header">
     <a href="/">Home</a>
+    <a href="/upload/">Upload</a>
 </div>
