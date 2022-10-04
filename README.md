@@ -16,16 +16,16 @@ Using:
                 - comment: VARCHAR
             - artifacts
                 - id: PRIMARY_KEY int
-                - site_id: VARCHAR
-                - title: VARCHAR
-                - description: VARCHAR
-                - model_url: VARCHAR
+                - site_id: int
+                - title: VARCHAR 128
+                - description: VARCHAR 256
+                - model_url: VARCHAR 256
                 - date_excavated: DATE
-                - location: VARCHAR
-            - dig sites
+                - location: VARCHAR 64
+            - dig_sites
                 - id: PRIMARY_KEY int
-                - title: VARCHAR
-                - description: VARCHAR
-                - model_url: VARCHAR
+                - title: VARCHAR 128
+                - description: VARCHAR 256
+                - model_url: VARCHAR 256
                 - date_begin: DATE
                 - date_end: DATE
