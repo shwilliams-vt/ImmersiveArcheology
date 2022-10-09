@@ -31,12 +31,13 @@ if (!$connection) {
         header("HTTP/1.1 201");
         $success = true;
         
-        foreach ($result as $row) {
-            echo "<";
-            foreach ($row as $field) {
-                echo $field . ",";
-            }
+        $array = array();
+
+        while($row = mysqli_fetch_assoc($result)) {
+            $array[] = $row;
         }
+
+        echo json_encode($array);
     }
     else {
         $error_msg = "Query was rejected by the database";

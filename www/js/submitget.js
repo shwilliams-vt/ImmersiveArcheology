@@ -1,7 +1,7 @@
 export default function submitGet(phpLink, terms, onSuccess, onFailure) {
 
     // 1. Parse GETS
-    const data = new Headers();
+    const data = new URLSearchParams();
 
     terms.forEach(child=>{
         data.append(child.key, child.value);
@@ -9,9 +9,8 @@ export default function submitGet(phpLink, terms, onSuccess, onFailure) {
 
     // 2. Submit GET
 
-    fetch(phpLink, {
-        method: 'get',
-        headers: data
+    fetch(phpLink + "?" + data.toString(), {
+        method: 'get'
     }).then(async (res) => {
         let t = await res.text();
         if (res.status == 201 && onSuccess) {

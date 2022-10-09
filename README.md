@@ -29,3 +29,10 @@ Using:
                 - model_url: VARCHAR 256
                 - date_begin: DATE
                 - date_end: DATE
+            - comments
+                - id: PRIMARY_KEY A_I int
+                - thread_id: int
+                - name: VARCHAR 64
+                - email: VARCHAR 64
+                - comment: VARCHAR 512
+                - date: DATETIME

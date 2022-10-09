@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="/css/main.css" rel="stylesheet" />
     <link href="/css/view.css" rel="stylesheet" />
+    <link href="/css/comments.css" rel="stylesheet" />
     <title>Immersive Archeology</title>
 </head>
 <body>
@@ -46,13 +47,15 @@
 
                 header("HTTP/1.1 201");
                 $success = true;
+
+                $array = array();
                 foreach ($result as $row) {
-                    echo "<div id='result'><";
-                    foreach ($row as $field) {
-                        echo $field . ",";
-                    }
-                    echo "</div>";
+                    $array[] = $row;
                 }
+
+                echo "<div id='result'>";
+                echo json_encode($array);
+                echo "</div>";
             }
             else {
                 $error_msg = "Could not find this artifact";
@@ -83,6 +86,7 @@
     import parseTable from "/js/tableparser.js";
     import { createDOMElem, createDOMElemWithText } from "/js/createdomelem.js";
     import ArtifactScene from "/js/xrworld/artifactscene.js";
+    import CommentWidget from "/js/commentwidget.js";
 
     let res = document.querySelector("#result");
     if (!res) {
@@ -106,6 +110,15 @@
         res.appendChild(createDOMElemWithText("p", "Date excavated: " + result[5]));
         res.appendChild(createDOMElemWithText("p", "Artifact ID: " + result[0]));
         res.appendChild(createDOMElemWithText("p", "Site ID: " + result[1]));
+
+
+        // Load comments
+        let commentDiv = document.createElement("div");
+        commentDiv.style.width = "80%";
+        res.appendChild(commentDiv);
+
+        let comments = new CommentWidget(result[0]);
+        commentDiv.appendChild(comments.domElem);
 
     }
 </script>
