@@ -85,7 +85,7 @@
 <script type="module">
     import parseTable from "/js/tableparser.js";
     import { createDOMElem, createDOMElemWithText } from "/js/createdomelem.js";
-    import Dig_siteScene from "/js/xrworld/dig_sitescene.js";
+    import Dig_siteScene from "/js/xrworld/artifactscene.js"; //need to creat dig_sitescene.js
     import CommentWidget from "/js/commentwidget.js";
 
     let res = document.querySelector("#result");
