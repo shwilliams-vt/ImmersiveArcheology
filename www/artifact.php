@@ -117,7 +117,8 @@
         commentDiv.style.width = "80%";
         res.appendChild(commentDiv);
 
-        let comments = new CommentWidget(result[0]);
+        // Add 'a' prefix for artifact
+        let comments = new CommentWidget("a"+result[0]);
         commentDiv.appendChild(comments.domElem);
 
     }

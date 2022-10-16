@@ -12,14 +12,14 @@ if (!$connection) {
     $error_msg = "Could not connect to the database/invalid credentials.";
 }
 
-if (!isset($_GET['thread_id']) || !is_numeric(htmlspecialchars($_GET['thread_id']))) {
+if (!isset($_GET['thread_id'])) {
     $error_msg = "Invalid thread ID";
 }
 else { 
 
-    $thread_id = intval(htmlspecialchars($_GET['thread_id']));
+    $thread_id = htmlspecialchars($_GET['thread_id']);
     
-    $qry = "SELECT * FROM `{$dbTableName}` WHERE `thread_id`={$thread_id} ORDER BY `date` DESC";
+    $qry = "SELECT * FROM `{$dbTableName}` WHERE `thread_id`='{$thread_id}' ORDER BY `date` DESC";
 
     $result = mysqli_query($connection, $qry, MYSQLI_STORE_RESULT);
 

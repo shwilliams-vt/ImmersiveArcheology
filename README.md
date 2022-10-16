@@ -31,7 +31,7 @@ Using:
                 - date_end: DATE
             - comments
                 - id: PRIMARY_KEY A_I int
-                - thread_id: int
+                - thread_id: VARCHAR 64
                 - name: VARCHAR 64
                 - email: VARCHAR 64
                 - comment: VARCHAR 512

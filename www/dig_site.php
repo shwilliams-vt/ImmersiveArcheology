@@ -118,7 +118,8 @@
         commentDiv.style.width = "80%";
         res.appendChild(commentDiv);
 
-        let comments = new CommentWidget(result[0]);
+        // Add 'd' prefix for dig site
+        let comments = new CommentWidget("d"+result[0]);
         commentDiv.appendChild(comments.domElem);
 
     }

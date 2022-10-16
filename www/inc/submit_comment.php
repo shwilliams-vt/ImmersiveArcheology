@@ -14,12 +14,9 @@ if (!$connection) {
 else if (!(isset($_POST['thread_id']) && isset($_POST['name']) && isset($_POST['email']) && isset($_POST['comment']))) {
     $error_msg = "Some required fields are empty (1)";
 }
-else if (!is_numeric(htmlspecialchars($_POST['thread_id']))) {
-    $error_msg = "Invalid thread ID";
-}
 else {
 
-    $thread_id = intval(htmlspecialchars($_POST['thread_id'])); 
+    $thread_id = htmlspecialchars($_POST['thread_id']); 
     $name = htmlspecialchars($_POST['name']); 
     $email = htmlspecialchars($_POST['email']);
     $comment =  htmlspecialchars($_POST['comment']);
