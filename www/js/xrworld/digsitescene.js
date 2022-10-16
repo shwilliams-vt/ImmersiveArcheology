@@ -8,15 +8,16 @@ import * as HELPERS from './threehelpers.js';
 
 const loader = new GLTFLoader();
 
-let modelLink;
-function init(link) {
-    modelLink = link;
+let digSite, artifacts;
+function init(info) {
+    digSite = info.digSite;
+    artifacts = info.artifacts;
 }
 
-export default class ArtifactScene extends XRWorld {
+export default class DigSiteScene extends XRWorld {
 
-    constructor(parentElem, modelLink) {
-        super(parentElem, init(modelLink));
+    constructor(parentElem, info) {
+        super(parentElem, init(info));
     }    
 
     // Demo update and start implementation
@@ -34,19 +35,38 @@ export default class ArtifactScene extends XRWorld {
         var material = new THREE.MeshStandardMaterial( {opacity:0.0, transparent:true} );
         this.cube = new THREE.Mesh( geometry, material );
 
-        loader.load(modelLink, gltf=>{
+        // Load scene
+        loader.load(digSite[3], gltf=>{
 
             let scene = gltf.scene.children[0];
-
-            HELPERS.normalizeModel(scene);
-            console.log(scene)
             
-            this.cube.add(gltf.scene);
+            this.addObjectToScene(scene);
+
         }, undefined, e=>console.log("Could not load model at: " + modelLink + ", error: " + e)
         );
 
-        // Add cube to Scene
-        this.addObjectToScene(this.cube);
+        // Load artifacts
+        artifacts.forEach(artifact=>{
+
+            let modelLink = artifact[4]
+            loader.load(modelLink, gltf=>{
+
+                let obj = new THREE.Object3D();
+                let scene = gltf.scene.children[0];
+                HELPERS.normalizeModel(scene);
+
+                obj.add(scene);
+
+                let pos_str = artifact[6].slice(1,-1).split(",");
+                let pos = []
+                pos_str.forEach(n=>pos.push(parseFloat(n)));
+                obj.position.set(...pos);
+                
+                this.addObjectToScene(obj);
+
+            }, undefined, e=>console.log("Could not load model at: " + modelLink + ", error: " + e)
+            );
+        });
 
         // Add light to main camera
         this.mainCamera.add(this.light);

@@ -15,8 +15,6 @@ export default function parseTable(t) {
 
     let json = JSON.parse(t);
 
-    console.log(json)
-
     let all = [];
 
     json.forEach(row=>{

@@ -85,7 +85,7 @@
 <script type="module">
     import parseTable from "/js/tableparser.js";
     import { createDOMElem, createDOMElemWithText } from "/js/createdomelem.js";
-    import Dig_siteScene from "/js/xrworld/artifactscene.js"; //need to creat dig_sitescene.js
+    import ArtifactScene from "/js/xrworld/artifactscene.js"; 
     import CommentWidget from "/js/commentwidget.js";
 
     let res = document.querySelector("#result");
@@ -106,11 +106,15 @@
         xrDiv.style.height = "50vh";
         xrDiv.style.border = "4px solid #aaa";
         xrDiv.style.overflow = "hidden";
-        res.appendChild(new Dig_siteScene(xrDiv, result[3]).parentElem);
+        res.appendChild(new ArtifactScene(xrDiv, result[3]).parentElem);
         res.appendChild(createDOMElemWithText("p", "Date Begin: " + result[4]));
         res.appendChild(createDOMElemWithText("p", "Date End: " + result[5]));
         res.appendChild(createDOMElemWithText("p", "Dig_site ID: " + result[0]));
 
+        // Add thing for XR
+        let xr_btn = createDOMElemWithText("a", "Visit in XR");
+        xr_btn.setAttribute("href", "/xr.php?id="+result[0]);
+        res.appendChild(xr_btn);
 
 
         // Load comments
