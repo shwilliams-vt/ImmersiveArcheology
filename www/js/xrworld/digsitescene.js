@@ -35,12 +35,16 @@ export default class DigSiteScene extends XRWorld {
         var material = new THREE.MeshStandardMaterial( {opacity:0.0, transparent:true} );
         this.cube = new THREE.Mesh( geometry, material );
 
+        // Gravity helper
+        this.gravityHandler = new HELPERS.GravityWorld();
+
         // Load scene
         loader.load(digSite[3], gltf=>{
 
             let scene = gltf.scene.children[0];
             
             this.addObjectToScene(scene);
+            this.gravityHandler.add(scene, "body", true);
 
         }, undefined, e=>console.log("Could not load model at: " + modelLink + ", error: " + e)
         );
@@ -64,6 +68,8 @@ export default class DigSiteScene extends XRWorld {
                 
                 this.addObjectToScene(obj);
 
+                this.gravityHandler.add(obj, "cylinder", true);
+
             }, undefined, e=>console.log("Could not load model at: " + modelLink + ", error: " + e)
             );
         });
@@ -81,6 +87,8 @@ export default class DigSiteScene extends XRWorld {
 
         this.cube.rotation.x += 0.001;
         this.cube.rotation.y += 0.001;
+
+        this.gravityHandler.update();
 
         this.controls.update();
     }
