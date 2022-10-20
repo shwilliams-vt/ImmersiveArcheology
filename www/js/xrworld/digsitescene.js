@@ -1,6 +1,7 @@
 import { XRWorld, THREE }  from "./xrworld.js";
 
 import { FirstPersonControls } from 'https://unpkg.com/three@0.126.0/examples/jsm/controls/FirstPersonControls.js';
+import Controller from "./controller.js";
 // import { OrbitControls } from 'https://unpkg.com/three@0.126.0/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.126.0/examples/jsm/loaders/GLTFLoader.js';
 import { VRButton } from "https://cdn.jsdelivr.net/npm/three@0.119.1/examples/jsm/webxr/VRButton.min.js";
@@ -31,8 +32,9 @@ export default class DigSiteScene extends XRWorld {
 
     start() {
 
-        // Change main camera position
-        this.mainCamera.position.z = 2;
+        // Rotate camera to face forward
+        this.mainCamera.position.z = 0;
+        this.mainCamera.lookAt(0,0,1)
 
         this.light = new THREE.PointLight( 0xffffff, 1, 100 );
         this.light.position.z = 2;
@@ -82,6 +84,7 @@ export default class DigSiteScene extends XRWorld {
         this.player = new THREE.Object3D()
         this.removeObjectFromScene(this.mainCamera)
         this.player.add(this.mainCamera);
+        this.player.camera = this.mainCamera;
         this.addObjectToScene(this.player);
         // let scope = this;
 
@@ -125,9 +128,11 @@ export default class DigSiteScene extends XRWorld {
         // this.controls.maxDistance = 3;
         // this.controls.update(); 
         
-        this.controls = new FirstPersonControls( this.mainCamera, this.renderer.domElement )
-        this.controls.movementSpeed = 4;
-		this.controls.lookSpeed = 0.5;
+        // this.controls = new FirstPersonControls( this.mainCamera, this.renderer.domElement )
+        // this.controls.movementSpeed = 4;
+		// this.controls.lookSpeed = 0.5;
+
+        this.controls = new Controller(this.player)
 		// this.controls.lookVertical = false;
     }
 
