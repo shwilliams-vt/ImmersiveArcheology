@@ -105,7 +105,7 @@
 
     let result_dig_site = document.querySelector("#result_dig_site");
     let result_artifacts = document.querySelector("#result_artifacts");
-    result_artifacts.style.height = "calc(100vh - 150px)"
+    result_artifacts.style.height = "calc(100vh - 190px)"
 
     if (!result_dig_site || !result_artifacts) {
 

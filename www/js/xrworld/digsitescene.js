@@ -1,7 +1,10 @@
 import { XRWorld, THREE }  from "./xrworld.js";
 
-import { OrbitControls } from 'https://unpkg.com/three@0.126.0/examples/jsm/controls/OrbitControls.js';
+import { FirstPersonControls } from 'https://unpkg.com/three@0.126.0/examples/jsm/controls/FirstPersonControls.js';
+// import { OrbitControls } from 'https://unpkg.com/three@0.126.0/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.126.0/examples/jsm/loaders/GLTFLoader.js';
+import { VRButton } from "https://cdn.jsdelivr.net/npm/three@0.119.1/examples/jsm/webxr/VRButton.min.js";
+
 import * as HELPERS from './threehelpers.js';
 
 // Demo gltf: https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf
@@ -18,6 +21,10 @@ export default class DigSiteScene extends XRWorld {
 
     constructor(parentElem, info) {
         super(parentElem, init(info));
+
+        // Enable XR
+        document.body.appendChild( VRButton.createButton( this.renderer ) );
+        this.renderer.xr.enabled = true;
     }    
 
     // Demo update and start implementation
@@ -35,16 +42,12 @@ export default class DigSiteScene extends XRWorld {
         var material = new THREE.MeshStandardMaterial( {opacity:0.0, transparent:true} );
         this.cube = new THREE.Mesh( geometry, material );
 
-        // Gravity helper
-        this.gravityHandler = new HELPERS.GravityWorld();
-
         // Load scene
         loader.load(digSite[3], gltf=>{
 
             let scene = gltf.scene.children[0];
             
             this.addObjectToScene(scene);
-            this.gravityHandler.add(scene, "body", true);
 
         }, undefined, e=>console.log("Could not load model at: " + modelLink + ", error: " + e)
         );
@@ -68,8 +71,6 @@ export default class DigSiteScene extends XRWorld {
                 
                 this.addObjectToScene(obj);
 
-                this.gravityHandler.add(obj, "cylinder", true);
-
             }, undefined, e=>console.log("Could not load model at: " + modelLink + ", error: " + e)
             );
         });
@@ -77,10 +78,57 @@ export default class DigSiteScene extends XRWorld {
         // Add light to main camera
         this.mainCamera.add(this.light);
 
-        this.controls = new OrbitControls( this.mainCamera, this.renderer.domElement );
-        this.controls.minDistance = 1;
-        this.controls.maxDistance = 3;
-        this.controls.update();        
+        // add camera to player
+        this.player = new THREE.Object3D()
+        this.removeObjectFromScene(this.mainCamera)
+        this.player.add(this.mainCamera);
+        this.addObjectToScene(this.player);
+        // let scope = this;
+
+        // {
+        //     // Simple motion
+        //     let speed = 4;
+        //     function getVector(axis) {
+
+        //         // Create vector3
+        //         let vec = new THREE.Vector3(...axis);
+
+        //         // Scale vector
+        //         vec.multiplyScalar(speed*scope.deltaTime());
+
+        //         // Rotate by camera
+        //         vec.applyQuaternion(scope.mainCamera.quaternion)
+
+        //         return vec
+        //     }
+        //     document.addEventListener("keydown", e=>{
+        //         switch (e.key) {
+        //             case 'w':
+        //                 scope.player.position.add(getVector([0,0,-1]));
+        //                 break;
+        //             case 'a':
+        //                 scope.player.position.add(getVector([-1,0,0]));
+        //                 break;
+        //             case 's':
+        //                 scope.player.position.add(getVector([0,0,1]));
+        //                 break;
+        //             case 'd':
+        //                 scope.player.position.add(getVector([1,0,0]));
+        //                 break; 
+        //         }
+        //     })
+
+        // }
+
+        // this.controls = new OrbitControls( this.mainCamera, this.renderer.domElement );
+        // this.controls.minDistance = 1;
+        // this.controls.maxDistance = 3;
+        // this.controls.update(); 
+        
+        this.controls = new FirstPersonControls( this.mainCamera, this.renderer.domElement )
+        this.controls.movementSpeed = 4;
+		this.controls.lookSpeed = 0.5;
+		// this.controls.lookVertical = false;
     }
 
     update() {
@@ -88,9 +136,7 @@ export default class DigSiteScene extends XRWorld {
         this.cube.rotation.x += 0.001;
         this.cube.rotation.y += 0.001;
 
-        this.gravityHandler.update();
-
-        this.controls.update();
+        this.controls.update(this.deltaTime());
     }
 
 }

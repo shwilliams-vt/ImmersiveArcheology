@@ -72,6 +72,9 @@ class XRWorld {
         // Set instance
         instance = this;
 
+        // Add clock
+        this.clock = new THREE.Clock();
+
         // Add premade objects
         this.addObjectToScene(this.mainCamera);
 
@@ -100,6 +103,14 @@ class XRWorld {
     // User functions
     addObjectToScene(object) {
         this.scene.add( object );
+    }
+
+    removeObjectFromScene(object) {
+        this.scene.remove(object);
+    }
+
+    deltaTime() {
+        return Math.min(0.02, this.clock.getDelta());
     }
 }
 
