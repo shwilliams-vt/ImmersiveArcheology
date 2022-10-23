@@ -43,6 +43,10 @@ class XRWorld {
         this.renderer = renderer;
         this.domElem = renderer.domElement;
 
+        console.log(this.domElem)
+        this.domElem.oncontextmenu = () => false;
+        parentElem.oncontextmenu = () => false;
+
         // Configure renderer clear color
         renderer.setClearColor( 0xffffff, 1 );
 

@@ -1,14 +1,16 @@
 import { THREE } from "./xrworld";
 
+let RENDERER = null
+
 function addClickEvent(mouseButton, onStart, onEnd) {
 
-    document.addEventListener("mousedown", e=>{
+    RENDERER.addEventListener("mousedown", e=>{
         if (e.button == mouseButton)
             if (onStart)
                 onStart();
     })
 
-    document.addEventListener("mouseup", e=>{
+    RENDERER.addEventListener("mouseup", e=>{
         if (e.button == mouseButton)
             if (onStart)
                 onEnd();
@@ -17,13 +19,13 @@ function addClickEvent(mouseButton, onStart, onEnd) {
 
 function addKeyEvent(key, onStart, onEnd) {
 
-    document.addEventListener("keydown", e=>{
+    RENDERER.addEventListener("keydown", e=>{
         if (e.key == key)
             if (onStart)
                 onStart();
     })
 
-    document.addEventListener("keyup", e=>{
+    RENDERER.addEventListener("keyup", e=>{
         if (e.key == key)
             if (onStart)
                 onEnd();
@@ -34,13 +36,18 @@ export default class Controller {
 
     IN_XR = false;
 
-    constructor(player) {
-        
+    constructor(player, renderer) {
+
         this.player = player;
+        this.renderer = renderer;
+        RENDERER = renderer.domElement
+        RENDERER.tabIndex = 1000;
 
         // Properties
         this.enabled = true;
         this.moveSpeed = 4;
+        this.mouseXSpeed = .4;
+        this.mouseYSpeed = .4;
 
         // Read only flags
 
@@ -62,6 +69,7 @@ export default class Controller {
         if (!this.enabled)
             return;
 
+        this.rotate(deltaTime)
         this.translateForward(deltaTime)
     }
 
@@ -105,19 +113,64 @@ export default class Controller {
             'd',
             ()=>scope.KEY_D_IS_DOWN = true,
             ()=>scope.KEY_D_IS_DOWN = false,
+        );
+        addKeyEvent(
+            'z',
+            ()=>scope.KEY_Z_IS_DOWN = true,
+            ()=>scope.KEY_Z_IS_DOWN = false,
         )
+        addKeyEvent(
+            'x',
+            ()=>scope.KEY_X_IS_DOWN = true,
+            ()=>scope.KEY_X_IS_DOWN = false,
+        );
 
+        // Add camera movement
+        this.MOUSE_DELTA = {x:0,y:0, t_last:performance.now(),t:performance.now()}
+        // Store last recorded
+        RENDERER.addEventListener("mousemove", e=>{
+            scope.MOUSE_DELTA.x = e.movementX;
+            scope.MOUSE_DELTA.y = e.movementY;
+            let t = performance.now();
+            scope.MOUSE_DELTA.t = t
+            scope.MOUSE_DELTA.t_last = t
+        });
+
+        // Mouse out events
+        RENDERER.addEventListener("mouseout", e=>{
+            scope.reset()
+        })
+        RENDERER.addEventListener("focusout", e=>{
+            scope.reset()
+        })
+
+    }
+
+    reset() {
+        this.MOUSE_DELTA.x = 0
+        this.MOUSE_DELTA.y = 0
+        this.KEY_W_IS_DOWN = false
+        this.KEY_A_IS_DOWN = false
+        this.KEY_S_IS_DOWN = false
+        this.KEY_D_IS_DOWN = false
+        this.KEY_Z_IS_DOWN = false
+        this.KEY_X_IS_DOWN = false
+        this.LEFT_MOUSE_DOWN = false
+        this.RIGHT_MOUSE_DOWN = false
     }
 
     calculateInputVector() {
         let x_pos = this.KEY_A_IS_DOWN ? 1 : 0;
         let x_neg = this.KEY_D_IS_DOWN ? -1 : 0;
 
-        let y_pos = 0;
-        let y_neg = 0;
-        
-        let z_pos = this.LEFT_MOUSE_DOWN || this.KEY_W_IS_DOWN ? 1 : 0;
-        let z_neg = this.RIGHT_MOUSE_DOWN || this.KEY_S_IS_DOWN ? -1 : 0;
+        let y_pos = this.KEY_Z_IS_DOWN ? 1 : 0;
+        let y_neg = this.KEY_X_IS_DOWN ? -1 : 0;
+
+        // let z_pos = this.LEFT_MOUSE_DOWN || this.KEY_W_IS_DOWN ? 1 : 0;
+        // let z_neg = this.RIGHT_MOUSE_DOWN || this.KEY_S_IS_DOWN ? -1 : 0;
+
+        let z_pos = this.KEY_W_IS_DOWN ? 1 : 0;
+        let z_neg = this.KEY_S_IS_DOWN ? -1 : 0;
 
         return new THREE.Vector3(
             x_pos + x_neg,
@@ -134,7 +187,6 @@ export default class Controller {
         // Based off speed
         vec.multiplyScalar(speed);
 
-
         // Move player
         this.player.position.add(vec);
     }
@@ -142,10 +194,34 @@ export default class Controller {
     translateForward(deltaTime) {
         // Translate on the fwd axis
         let fwd = this.calculateInputVector();
-        fwd.applyQuaternion(this.player.quaternion)
+
+        let q = new THREE.Quaternion();
+        q.copy(this.player.quaternion)
+        // q.multiply(this.player.camera.quaternion)
+        
+        fwd.applyQuaternion(q)
 
         this.translate(this.moveSpeed * deltaTime, fwd);
 
-    }   
+    }
+
+    rotate(deltaTime) {
+
+        if (this.MOUSE_DELTA.t_last == this.MOUSE_DELTA.t && this.LEFT_MOUSE_DOWN) {
+
+            // Get local X and Y axis
+            let local_x = new THREE.Vector3(1,0,0);
+            let local_y = new THREE.Vector3(0,1,0);
+
+            // Rotate player X axis based on mouse Y
+            this.player.camera.rotateOnWorldAxis(local_x, this.MOUSE_DELTA.y * this.mouseYSpeed * deltaTime);
+
+            // // Rotate player Y axis based on mouse X
+            this.player.rotateOnWorldAxis(local_y, -this.MOUSE_DELTA.x * this.mouseXSpeed * deltaTime);
+
+            // update last time
+            this.MOUSE_DELTA.t_last = performance.now()
+        }
+    }
 
 }

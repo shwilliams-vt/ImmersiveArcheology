@@ -164,7 +164,3 @@ form input[type="file"] {
     vertical-align:bottom;
     font-size:12px;
 }
-
-canvas {
-    pointer-events: none!important;
-}

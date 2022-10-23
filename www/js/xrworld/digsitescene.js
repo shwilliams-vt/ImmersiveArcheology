@@ -33,11 +33,10 @@ export default class DigSiteScene extends XRWorld {
     start() {
 
         // Rotate camera to face forward
-        this.mainCamera.position.z = 0;
+        this.mainCamera.position.set(0,0,0);
         this.mainCamera.lookAt(0,0,1)
 
         this.light = new THREE.PointLight( 0xffffff, 1, 100 );
-        this.light.position.z = 2;
 
         //this.cube = new THREE.Object3D();
         var geometry = new THREE.BoxGeometry( 1, 1, 1 );
@@ -86,54 +85,8 @@ export default class DigSiteScene extends XRWorld {
         this.player.add(this.mainCamera);
         this.player.camera = this.mainCamera;
         this.addObjectToScene(this.player);
-        // let scope = this;
 
-        // {
-        //     // Simple motion
-        //     let speed = 4;
-        //     function getVector(axis) {
-
-        //         // Create vector3
-        //         let vec = new THREE.Vector3(...axis);
-
-        //         // Scale vector
-        //         vec.multiplyScalar(speed*scope.deltaTime());
-
-        //         // Rotate by camera
-        //         vec.applyQuaternion(scope.mainCamera.quaternion)
-
-        //         return vec
-        //     }
-        //     document.addEventListener("keydown", e=>{
-        //         switch (e.key) {
-        //             case 'w':
-        //                 scope.player.position.add(getVector([0,0,-1]));
-        //                 break;
-        //             case 'a':
-        //                 scope.player.position.add(getVector([-1,0,0]));
-        //                 break;
-        //             case 's':
-        //                 scope.player.position.add(getVector([0,0,1]));
-        //                 break;
-        //             case 'd':
-        //                 scope.player.position.add(getVector([1,0,0]));
-        //                 break; 
-        //         }
-        //     })
-
-        // }
-
-        // this.controls = new OrbitControls( this.mainCamera, this.renderer.domElement );
-        // this.controls.minDistance = 1;
-        // this.controls.maxDistance = 3;
-        // this.controls.update(); 
-        
-        // this.controls = new FirstPersonControls( this.mainCamera, this.renderer.domElement )
-        // this.controls.movementSpeed = 4;
-		// this.controls.lookSpeed = 0.5;
-
-        this.controls = new Controller(this.player)
-		// this.controls.lookVertical = false;
+        this.controls = new Controller(this.player, this.renderer)
     }
 
     update() {
