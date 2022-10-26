@@ -1,4 +1,4 @@
-import { THREE } from "./xrworld";
+import { THREE } from "./xrworld.js";
 
 let RENDERER = null
 
@@ -60,6 +60,9 @@ export default class Controller {
         this.KEY_A_IS_DOWN = false;
         this.KEY_S_IS_DOWN = false;
         this.KEY_D_IS_DOWN = false;
+
+        // XR Sources
+        this.XR_CONTROLLERS = []
 
         this.setUpEvents();
     }
@@ -144,6 +147,55 @@ export default class Controller {
             scope.reset()
         })
 
+
+        // XR Events
+        this.renderer.xr.enabled = true;
+        this.renderer.xr.setFramebufferScaleFactor(2.0);
+
+        // Sessions
+        this.renderer.xr.addEventListener('sessionstart', function ( e ) {
+
+            let session = scope.renderer.xr.getSession();
+
+            // Reset input sources
+            scope.XR_CONTROLLERS = []
+            session.inputSources.forEach(source=>{
+                scope.XR_CONTROLLERS.push(source)
+            })
+
+            // Update
+            // controllers
+            session.addEventListener("inputsourceschange", e=>{
+                
+                // Update our controllers
+                e.removed.forEach(removedSource=>{
+                    scope.XR_CONTROLLERS = scope.XR_CONTROLLERS.filter(src=>src != removedSource);
+                })
+                e.added.forEach(addedSource=>{
+                    scope.XR_CONTROLLERS.push(addedSource);
+                })
+
+            })
+
+            
+
+            scope.IN_XR = true;
+        
+        } );
+        
+        this.renderer.xr.addEventListener('sessionend', e=>{
+        
+            let session = scope.renderer.xr.getSession();
+
+            // scope.player.camera.position.set(0,0,0)
+            // scope.player.camera.lookAt(0,0,1)
+
+            scope.IN_XR = false;
+        
+        } );
+
+        
+
     }
 
     reset() {
@@ -160,17 +212,43 @@ export default class Controller {
     }
 
     calculateInputVector() {
-        let x_pos = this.KEY_A_IS_DOWN ? 1 : 0;
-        let x_neg = this.KEY_D_IS_DOWN ? -1 : 0;
 
-        let y_pos = this.KEY_Z_IS_DOWN ? 1 : 0;
-        let y_neg = this.KEY_X_IS_DOWN ? -1 : 0;
+        let x_pos = 0, x_neg = 0, y_pos = 0, y_neg = 0, z_pos = 0, z_neg = 0;
 
-        // let z_pos = this.LEFT_MOUSE_DOWN || this.KEY_W_IS_DOWN ? 1 : 0;
-        // let z_neg = this.RIGHT_MOUSE_DOWN || this.KEY_S_IS_DOWN ? -1 : 0;
+        if (!this.IN_XR) {
 
-        let z_pos = this.KEY_W_IS_DOWN ? 1 : 0;
-        let z_neg = this.KEY_S_IS_DOWN ? -1 : 0;
+            x_pos = this.KEY_A_IS_DOWN ? 1 : 0;
+            x_neg = this.KEY_D_IS_DOWN ? -1 : 0;
+
+            y_pos = this.KEY_Z_IS_DOWN ? 1 : 0;
+            y_neg = this.KEY_X_IS_DOWN ? -1 : 0;
+
+            // let z_pos = this.LEFT_MOUSE_DOWN || this.KEY_W_IS_DOWN ? 1 : 0;
+            // let z_neg = this.RIGHT_MOUSE_DOWN || this.KEY_S_IS_DOWN ? -1 : 0;
+
+            z_pos = this.KEY_W_IS_DOWN ? 1 : 0;
+            z_neg = this.KEY_S_IS_DOWN ? -1 : 0;
+        }
+        else {
+
+            // In XR
+            let leftController = this.getXRControllerByHand("left");
+            let rightController = this.getXRControllerByHand("right");
+
+
+            if (leftController && rightController) {
+
+                let leftGamepad = leftController.gamepad;
+                let rightGamepad = rightController.gamepad;
+    
+                let leftMultiAxes = leftGamepad.axes.length > 2;
+                let rightMultiAxes = rightGamepad.axes.length > 2;
+    
+                x_pos = leftGamepad.axes[leftMultiAxes ?  2 : 0 ];
+                z_pos = leftGamepad.axes[leftMultiAxes ?  3 : 1 ];
+            }
+            
+        }
 
         return new THREE.Vector3(
             x_pos + x_neg,
@@ -207,7 +285,7 @@ export default class Controller {
 
     rotate(deltaTime) {
 
-        if (this.MOUSE_DELTA.t_last == this.MOUSE_DELTA.t && this.LEFT_MOUSE_DOWN) {
+        if (!this.IN_XR && this.MOUSE_DELTA.t_last == this.MOUSE_DELTA.t && this.LEFT_MOUSE_DOWN) {
 
             // Get local X and Y axis
             let local_x = new THREE.Vector3(1,0,0);
@@ -222,6 +300,21 @@ export default class Controller {
             // update last time
             this.MOUSE_DELTA.t_last = performance.now()
         }
+    }
+
+    getXRControllerByHand(name) {
+
+        if (!this.IN_XR) return null;
+
+        let found_controller = null;
+
+        this.XR_CONTROLLERS.forEach(controller=>{
+            if (controller.handedness == name) {
+                found_controller = controller;
+            }
+        })
+
+        return found_controller;
     }
 
 }

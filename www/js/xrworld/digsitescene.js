@@ -87,12 +87,15 @@ export default class DigSiteScene extends XRWorld {
         this.addObjectToScene(this.player);
 
         this.controls = new Controller(this.player, this.renderer)
+
     }
 
     update() {
 
-        this.cube.rotation.x += 0.001;
-        this.cube.rotation.y += 0.001;
+        // let v = new THREE.Vector3()
+        // this.player.camera.getWorldDirection(v)
+        // console.log(v)
+        // console.log(this.player.position)
 
         this.controls.update(this.deltaTime());
     }

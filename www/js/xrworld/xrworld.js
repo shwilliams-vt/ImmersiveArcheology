@@ -43,7 +43,6 @@ class XRWorld {
         this.renderer = renderer;
         this.domElem = renderer.domElement;
 
-        console.log(this.domElem)
         this.domElem.oncontextmenu = () => false;
         parentElem.oncontextmenu = () => false;
 

@@ -119,7 +119,7 @@
         result_dig_site.innerHTML = "";
         result_artifacts.innerHTML = "";
 
-        result_dig_site.appendChild(createDOMElemWithText("center", "<h3>XR View for: <a href='/dig_site.php?id='" + digSite[0] + ">" + digSite[1] + "</a></h2>"));
+        result_dig_site.appendChild(createDOMElemWithText("center", "<h3>XR View for: <a href='/dig_site.php?id=" + digSite[0] + "'>" + digSite[1] + "</a></h2>"));
         result_dig_site.appendChild(new DigSiteScene(result_artifacts, {digSite:digSite, artifacts:artifacts}).parentElem);
 
 
