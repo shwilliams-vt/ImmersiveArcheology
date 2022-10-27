@@ -7,6 +7,9 @@ import { GLTFLoader } from 'https://unpkg.com/three@0.126.0/examples/jsm/loaders
 import { VRButton } from "https://cdn.jsdelivr.net/npm/three@0.119.1/examples/jsm/webxr/VRButton.min.js";
 
 import * as HELPERS from './threehelpers.js';
+import HTML2D from "./2DGUI/html2d.js";
+import Block2D from "./2DGUI/block2d.js";
+import { createDOMElem, createDOMElemWithText } from "../createdomelem.js";
 
 // Demo gltf: https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf
 
@@ -33,7 +36,7 @@ export default class DigSiteScene extends XRWorld {
     start() {
 
         // Rotate camera to face forward
-        this.mainCamera.position.set(0,0,0);
+        this.mainCamera.position.set(0,1.6,0);
         this.mainCamera.lookAt(0,0,1)
 
         this.light = new THREE.PointLight( 0xffffff, 1, 100 );
@@ -86,7 +89,69 @@ export default class DigSiteScene extends XRWorld {
         this.player.camera = this.mainCamera;
         this.addObjectToScene(this.player);
 
-        this.controls = new Controller(this.player, this.renderer)
+        this.controls = new Controller(this.player, this.renderer);
+
+        // Add control menu for player
+        let controlMenu = document.createElement("div");
+        controlMenu.style.height = "100px"
+        controlMenu.style.width = "100px"
+        controlMenu.style.background = "rgba(10,10,100,0.7)";
+        controlMenu.style.color = "white";
+        controlMenu.style.padding = "5px";
+        controlMenu.style.display = "flex";
+        // controlMenu.style.justifyContent = "center";
+        controlMenu.style.flexDirection = "column";
+        controlMenu.style.alignItems = "center";
+
+        let _t = createDOMElemWithText("h2", "Controls")
+        _t.style.margin = "0px"
+        _t.style.fontSize = "14px";
+        controlMenu.appendChild(_t)
+        // document.body.append(controlMenu)
+
+        let xrControlMenu = new HTML2D(controlMenu, {width:1.5})
+        this.player.add(xrControlMenu.mesh);
+        xrControlMenu.mesh.position.set(0,0,1);
+        xrControlMenu.mesh.rotateX(Math.PI/4)
+
+        let desktopControls = new Block2D({
+            width:.8,
+            height:0.6,
+            x:0,
+            y:0,
+            z:1,
+            src:"/img/desktop_nav.png",
+            transparent:true,
+            opacity:1
+        });
+        let xrControls = new Block2D({
+            width:1,
+            height:0.7,
+            x:0,
+            y:0,
+            z:1,
+            src:"/img/xr_nav.png",
+            transparent:true,
+            opacity:1
+        });
+        xrControls.mesh.visible = false;
+
+        xrControlMenu.mesh.add(desktopControls.mesh)
+        xrControlMenu.mesh.add(xrControls.mesh)
+        desktopControls.mesh.position.set(.2,0,-0.1)
+        xrControls.mesh.position.set(.15,0,-0.1)
+        desktopControls.mesh.rotateY(Math.PI)
+        xrControls.mesh.rotateY(Math.PI)
+
+        // Set up callbacks
+        this.controls.addEventListener("onstartxr", e=>{
+            desktopControls.mesh.visible = false;
+            xrControls.mesh.visible = true;
+        })
+        this.controls.addEventListener("onleavexr", e=>{
+            desktopControls.mesh.visible = true;
+            xrControls.mesh.visible = false;
+        })
 
     }
 

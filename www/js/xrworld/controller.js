@@ -65,6 +65,8 @@ export default class Controller {
         this.XR_CONTROLLERS = []
         this.XR_STATE = {}
 
+        // Events
+        this.eventListeners = new Map();
         this.setUpEvents();
     }
 
@@ -189,6 +191,8 @@ export default class Controller {
             
 
             scope.IN_XR = true;
+
+            scope.dispatchEvent("onstartxr", null);
         
         } );
         
@@ -202,10 +206,35 @@ export default class Controller {
 
             scope.IN_XR = false;
         
+            scope.dispatchEvent("onleavexr", null);
         } );
 
         
 
+    }
+
+    dispatchEvent(type, args) {
+
+        console.log(type)
+        if (Array.from(this.eventListeners.keys()).includes(type)) {
+            let callbacks = this.eventListeners.get(type);
+            callbacks.forEach(callback=>{
+                
+                callback(args)
+            })
+        }
+            
+    }
+
+    addEventListener(type, callback) {
+
+        console.log(type)
+        if (Array.from(this.eventListeners.keys()).includes(type)) {
+            this.eventListeners.get(type).push(callback)
+        }
+        else {
+            this.eventListeners.set(type, [callback]);
+        }
     }
 
     reset() {
