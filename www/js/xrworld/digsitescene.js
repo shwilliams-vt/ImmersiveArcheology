@@ -4,6 +4,7 @@ import { FirstPersonControls } from 'https://unpkg.com/three@0.126.0/examples/js
 import Controller from "./controller.js";
 // import { OrbitControls } from 'https://unpkg.com/three@0.126.0/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.126.0/examples/jsm/loaders/GLTFLoader.js';
+import { PLYLoader } from 'https://unpkg.com/three@0.126.0/examples/jsm/loaders/PLYLoader.js';
 import { VRButton } from "https://cdn.jsdelivr.net/npm/three@0.119.1/examples/jsm/webxr/VRButton.min.js";
 
 import * as HELPERS from './threehelpers.js';
@@ -14,6 +15,7 @@ import { createDOMElem, createDOMElemWithText } from "../createdomelem.js";
 // Demo gltf: https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf
 
 const loader = new GLTFLoader();
+const plyloader = new PLYLoader();
 
 let digSite, artifacts;
 function init(info) {
@@ -47,13 +49,21 @@ export default class DigSiteScene extends XRWorld {
         this.cube = new THREE.Mesh( geometry, material );
 
         // Load scene
-        loader.load(digSite[3], gltf=>{
+        // loader.load(digSite[3], gltf=>{
 
-            let scene = gltf.scene.children[0];
+        //     let scene = gltf.scene.children[0];
             
-            this.addObjectToScene(scene);
+        //     this.addObjectToScene(scene);
 
-        }, undefined, e=>console.log("Could not load model at: " + modelLink + ", error: " + e)
+        // }, undefined, e=>console.log("Could not load model at: " + digSite[3] + ", error: " + e)
+        // );
+        plyloader.load(digSite[3], points=>{
+
+            // let scene = gltf.scene.children[0];
+            
+            this.addObjectToScene(points);
+
+        }, undefined, e=>console.log("Could not load model at: " + digSite[3] + ", error: " + e)
         );
 
         // Load artifacts
