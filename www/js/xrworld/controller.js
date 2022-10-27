@@ -63,6 +63,7 @@ export default class Controller {
 
         // XR Sources
         this.XR_CONTROLLERS = []
+        this.XR_STATE = {}
 
         this.setUpEvents();
     }
@@ -157,6 +158,14 @@ export default class Controller {
 
             let session = scope.renderer.xr.getSession();
 
+            // Save camera state
+            let camPos = new THREE.Vector3()
+            let camRot = new THREE.Quaternion()
+            camPos.copy(scope.player.camera.position)
+            camRot.copy(scope.player.camera.quaternion)
+            scope.XR_STATE.CAM_POS = camPos
+            scope.XR_STATE.CAM_ROT = camRot
+
             // Reset input sources
             scope.XR_CONTROLLERS = []
             session.inputSources.forEach(source=>{
@@ -187,8 +196,9 @@ export default class Controller {
         
             let session = scope.renderer.xr.getSession();
 
-            // scope.player.camera.position.set(0,0,0)
-            // scope.player.camera.lookAt(0,0,1)
+            // Reset player camera
+            scope.player.camera.position.copy(scope.XR_STATE.CAM_POS)
+            scope.player.camera.quaternion.copy(scope.XR_STATE.CAM_ROT)
 
             scope.IN_XR = false;
         
@@ -246,6 +256,8 @@ export default class Controller {
     
                 x_pos = leftGamepad.axes[leftMultiAxes ?  2 : 0 ];
                 z_pos = leftGamepad.axes[leftMultiAxes ?  3 : 1 ];
+
+                y_pos = rightGamepad.axes[rightMultiAxes ?  3 : 1 ];
             }
             
         }

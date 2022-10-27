@@ -1,16 +1,5 @@
 import * as THREE from "https://unpkg.com/three@0.126.0/build/three.module.js";
 
-var instance = null;
-
-const render = function (e) {
-    requestAnimationFrame( render );
-
-    instance.__update();
-
-    // Render the scene
-    instance.renderer.render(instance.scene, instance.mainCamera);
-}
-
 class XRWorld {
 
     // Cameras
@@ -72,9 +61,6 @@ class XRWorld {
         window.addEventListener("resize", onResize, false);
         parent.addEventListener("load", onResize, false);
 
-        // Set instance
-        instance = this;
-
         // Add clock
         this.clock = new THREE.Clock();
 
@@ -95,12 +81,16 @@ class XRWorld {
         if (this.start)
             this.start();
 
-        render(this);
+        // render(this);
+        this.renderer.setAnimationLoop(() => { this.__update() });
     }
 
     __update() {
         if (this.update)
             this.update();
+
+        // Render the scene
+        this.renderer.render(this.scene, this.mainCamera);
     }
 
     // User functions
