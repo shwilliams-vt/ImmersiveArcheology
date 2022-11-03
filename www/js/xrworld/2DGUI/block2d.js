@@ -57,7 +57,6 @@ export default class Block2D extends UIElement {
 
         new THREE.TextureLoader().load( this.src, texture=>{
             me.mesh.material = new THREE.MeshBasicMaterial( { map: texture, wireframe: false, transparent: true } );
-            console.log(texture)
 
         },(e)=>console.log(e) );
     }

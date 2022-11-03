@@ -36,15 +36,18 @@ export default class Controller {
 
     IN_XR = false;
 
-    constructor(player, renderer) {
+    constructor(player, scene, renderer) {
 
         this.player = player;
+        this.scene = scene;
         this.renderer = renderer;
         RENDERER = renderer.domElement
         RENDERER.tabIndex = 1000;
 
         // Properties
         this.enabled = true;
+        this.canMove = true;
+        this.canRotate = true;
         this.moveSpeed = 4;
         this.mouseXSpeed = .4;
         this.mouseYSpeed = .4;
@@ -61,6 +64,14 @@ export default class Controller {
         this.KEY_S_IS_DOWN = false;
         this.KEY_D_IS_DOWN = false;
 
+        // Intersecting meshes (raycasting)
+        this.raycastMaxDistance = 50;
+        this.RAYCASTER = new THREE.Raycaster();
+        this.MOUSE_PTR_LOCATION = new THREE.Vector2();
+        // Musy
+        this.MOUSE_PTR_LOCATION.x = 'a';
+        this.MOUSE_PTR_LOCATION.y = 'a';
+
         // XR Sources
         this.XR_CONTROLLERS = []
         this.XR_STATE = {}
@@ -76,7 +87,12 @@ export default class Controller {
             return;
 
         this.rotate(deltaTime)
-        this.translateForward(deltaTime)
+        if (this.canMove)
+            this.translateForward(deltaTime)
+
+        this.getIntersection();
+
+        this.pointerIsDown()
     }
 
     setUpEvents() {
@@ -132,7 +148,8 @@ export default class Controller {
         );
 
         // Add camera movement
-        this.MOUSE_DELTA = {x:0,y:0, t_last:performance.now(),t:performance.now()}
+        let p = performance.now()
+        this.MOUSE_DELTA = {x:0,y:0, t_last:p,t:p}
         // Store last recorded
         RENDERER.addEventListener("mousemove", e=>{
             scope.MOUSE_DELTA.x = e.movementX;
@@ -148,6 +165,14 @@ export default class Controller {
         })
         RENDERER.addEventListener("focusout", e=>{
             scope.reset()
+        })
+
+        // Raycast Event
+        RENDERER.addEventListener("pointermove", e=>{
+        
+            scope.MOUSE_PTR_LOCATION.x = ( e.clientX / window.innerWidth ) * 2 - 1;
+            scope.MOUSE_PTR_LOCATION.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
+            
         })
 
 
@@ -170,9 +195,6 @@ export default class Controller {
 
             // Reset input sources
             scope.XR_CONTROLLERS = []
-            session.inputSources.forEach(source=>{
-                scope.XR_CONTROLLERS.push(source)
-            })
 
             // Update
             // controllers
@@ -184,6 +206,12 @@ export default class Controller {
                 })
                 e.added.forEach(addedSource=>{
                     scope.XR_CONTROLLERS.push(addedSource);
+                })
+                // Register controller numbers
+                let numControllers = 0;
+                scope.XR_CONTROLLERS.forEach(controller=>{
+                    controller.controllerNumber = numControllers;
+                    numControllers++;
                 })
 
             })
@@ -215,7 +243,6 @@ export default class Controller {
 
     dispatchEvent(type, args) {
 
-        console.log(type)
         if (Array.from(this.eventListeners.keys()).includes(type)) {
             let callbacks = this.eventListeners.get(type);
             callbacks.forEach(callback=>{
@@ -228,7 +255,6 @@ export default class Controller {
 
     addEventListener(type, callback) {
 
-        console.log(type)
         if (Array.from(this.eventListeners.keys()).includes(type)) {
             this.eventListeners.get(type).push(callback)
         }
@@ -256,8 +282,8 @@ export default class Controller {
 
         if (!this.IN_XR) {
 
-            x_pos = this.KEY_A_IS_DOWN ? 1 : 0;
-            x_neg = this.KEY_D_IS_DOWN ? -1 : 0;
+            x_pos = this.KEY_A_IS_DOWN ? -1 : 0;
+            x_neg = this.KEY_D_IS_DOWN ? 1 : 0;
 
             y_pos = this.KEY_Z_IS_DOWN ? 1 : 0;
             y_neg = this.KEY_X_IS_DOWN ? -1 : 0;
@@ -265,8 +291,8 @@ export default class Controller {
             // let z_pos = this.LEFT_MOUSE_DOWN || this.KEY_W_IS_DOWN ? 1 : 0;
             // let z_neg = this.RIGHT_MOUSE_DOWN || this.KEY_S_IS_DOWN ? -1 : 0;
 
-            z_pos = this.KEY_W_IS_DOWN ? 1 : 0;
-            z_neg = this.KEY_S_IS_DOWN ? -1 : 0;
+            z_pos = this.KEY_W_IS_DOWN ? -1 : 0;
+            z_neg = this.KEY_S_IS_DOWN ? 1 : 0;
         }
         else {
 
@@ -328,18 +354,85 @@ export default class Controller {
 
         if (!this.IN_XR && this.MOUSE_DELTA.t_last == this.MOUSE_DELTA.t && this.LEFT_MOUSE_DOWN) {
 
-            // Get local X and Y axis
-            let local_x = new THREE.Vector3(1,0,0);
-            let local_y = new THREE.Vector3(0,1,0);
+            if (this.canRotate) {
+                // Get local X and Y axis
+                let local_x = new THREE.Vector3(1,0,0);
+                let local_y = new THREE.Vector3(0,1,0);
 
-            // Rotate player X axis based on mouse Y
-            this.player.camera.rotateOnWorldAxis(local_x, this.MOUSE_DELTA.y * this.mouseYSpeed * deltaTime);
+                // Rotate player X axis based on mouse Y
+                this.player.camera.rotateOnWorldAxis(local_x, -this.MOUSE_DELTA.y * this.mouseYSpeed * deltaTime);
 
-            // // Rotate player Y axis based on mouse X
-            this.player.rotateOnWorldAxis(local_y, -this.MOUSE_DELTA.x * this.mouseXSpeed * deltaTime);
+                // // Rotate player Y axis based on mouse X
+                this.player.rotateOnWorldAxis(local_y, -this.MOUSE_DELTA.x * this.mouseXSpeed * deltaTime);
+            }
 
             // update last time
             this.MOUSE_DELTA.t_last = performance.now()
+            
+        }
+        else {
+
+            this.MOUSE_DELTA = {x:0, y:0, t:0, t_last:1}
+        }
+    }
+
+    getIntersection() {
+
+        if (!this.IN_XR) {
+
+            // console.log(this.MOUSE_PTR_LOCATION)
+            this.RAYCASTER.setFromCamera(this.MOUSE_PTR_LOCATION, this.player.camera);
+
+        }
+        else {
+
+            let rightController = this.getXRControllerByHand("right");
+            
+            if (rightController) {
+
+                let tempMatrix = new THREE.Matrix4();
+                let raySpace = this.renderer.xr.getController(rightController.controllerNumber)
+                tempMatrix.identity().extractRotation(raySpace.matrixWorld);
+                this.RAYCASTER.ray.origin.setFromMatrixPosition(raySpace.matrixWorld);
+                this.RAYCASTER.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+            }
+            else {
+                this.RAYCASTER.setFromCamera(new THREE.Vector2(), this.player.camera);
+
+            }
+        }
+
+        let intersects = this.RAYCASTER.intersectObjects( this.scene.children, true );
+
+        let mesh = null;
+        if (intersects.length > 0) {
+            mesh = intersects[0].object;
+        }
+
+
+        this.dispatchEvent("onhover", {mesh:mesh})
+    }
+
+    getDeltaPointer() {
+        if (this.IN_XR) {
+            
+        }
+        else {
+            return this.MOUSE_DELTA;
+        }
+    }
+
+    pointerIsDown() {
+        if (this.IN_XR) {
+            let rightController = this.getXRControllerByHand("right")
+
+            if (rightController) {
+                return rightController.gamepad.buttons[0].pressed;
+            }
+            return false;
+        }
+        else {
+            return this.LEFT_MOUSE_DOWN;
         }
     }
 
