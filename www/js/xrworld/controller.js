@@ -192,9 +192,6 @@ export default class Controller {
             let y = e.pageY - bounds.top;
             scope.MOUSE_PTR_LOCATION.x = ( x / (bounds.width) ) * 2 - 1;
             scope.MOUSE_PTR_LOCATION.y = - ( y / (bounds.height) ) * 2 + 1;
-
-
-            console.log(scope.MOUSE_PTR_LOCATION)
             
         })
 

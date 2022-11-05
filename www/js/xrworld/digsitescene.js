@@ -258,49 +258,58 @@ export default class DigSiteScene extends XRWorld {
         let lastHoveredMesh = null;
         this.xrSliderPtr = xrSliderPtr;
         this.isHoveringSliderPtr = false;
-        this.pointerIsDown = false;
+
         this.controls.addEventListener("onhover", e=>{
 
             if (e.intersects.length > 0) {
-                let uiElements = e.intersects.filter(p=>p.object.uiElement!==undefined);
 
-                uiElements.forEach(intersect=>{
-                    let mesh = intersect.object;
-                    console.log(mesh.uiElement.name)
-                    if (mesh != lastHoveredMesh) {
+                let topMesh = e.intersects[0].object;
 
-                        if (mesh != null) {
+                if (topMesh == lastHoveredMesh) {
+                    // Not much to do here
+                }
+                else {
 
-                            if (mesh.uiElement) {
-                                mesh.uiElement._onHover()
 
-                                if (mesh.uiElement.name == "sliderPtr")
-                                    scope.isHoveringSliderPtr = true;
-                            }
+                    if (topMesh.uiElement) {
+
+                        if (topMesh.uiElement.name === "sliderPtr") {
+                            this.isHoveringSliderPtr = true;
                         }
-                        else {
-
-                        }
-
-                        // Set lastHoveredMesh
-                        if (lastHoveredMesh != null) {
-
-                            if (lastHoveredMesh.uiElement) {
-                                lastHoveredMesh.uiElement._onEndHover()
-
-                                if (lastHoveredMesh.uiElement.name == "sliderPtr")
-                                    scope.isHoveringSliderPtr = false;
-                            }
-                        }
-                        else {
-
-                        }
-
-                        lastHoveredMesh = mesh;
+                        topMesh.uiElement._onHover();
                     }
-                });
+
+                    if (lastHoveredMesh != null) {
+
+                        if (lastHoveredMesh.uiElement) {
+                            if (lastHoveredMesh.uiElement.name === "sliderPtr") {
+
+                                this.isHoveringSliderPtr = false;
+                            }
+                            lastHoveredMesh.uiElement._onEndHover();
+                        }
+                    }
+                }
+
+                lastHoveredMesh = topMesh;
             }
-            else lastHoveredMesh = null;
+            else {
+
+                if (lastHoveredMesh == null) {
+
+                }
+                else {
+
+                    if (lastHoveredMesh.uiElement) {
+                        if (lastHoveredMesh.uiElement.name === "sliderPtr") {
+                            this.isHoveringSliderPtr = false;
+                        }
+                        lastHoveredMesh.uiElement._onEndHover();
+                    }
+                }
+
+                lastHoveredMesh = null;
+            }
         });
 
     }
@@ -320,6 +329,7 @@ export default class DigSiteScene extends XRWorld {
     }
 
     handleSlider() {
+
         if (this.isHoveringSliderPtr && this.controls.pointerIsDown()) {
 
             let currSliderPos = this.xrSliderPtr.mesh.position;
@@ -331,7 +341,9 @@ export default class DigSiteScene extends XRWorld {
             let canSlideLeft = currSliderPos.x < .223 && ptrDelta.x > 0;
             let canSlideRight = currSliderPos.x > -.627 && ptrDelta.x < 0;
 
+
             if (canSlideLeft || canSlideRight) {
+
 
                 let amt = ptrDelta.x;
                 if (Math.abs(amt) >= 0.01)
