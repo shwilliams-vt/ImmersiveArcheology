@@ -10,6 +10,7 @@ import { VRButton } from "https://cdn.jsdelivr.net/npm/three@0.119.1/examples/js
 import * as HELPERS from './threehelpers.js';
 import HTML2D from "./2DGUI/html2d.js";
 import Block2D from "./2DGUI/block2d.js";
+import MeshWrapper from "./2DGUI/meshwrapper.js";
 import { createDOMElem, createDOMElemWithText } from "../createdomelem.js";
 
 // Demo gltf: https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf
@@ -114,12 +115,29 @@ export default class DigSiteScene extends XRWorld {
             loader.load(modelLink, gltf=>{
 
                 let obj = new THREE.Object3D();
-                let scene = gltf.scene.children[0];
-                HELPERS.normalizeModel(scene);
+                // Add id and date to artifact
+                obj.userData.id = artifact[0]
+                obj.userData.date = new Date(artifact[5])
 
-                obj.add(scene);
+                // Artifact model
+                let aModel = gltf.scene.children[0]
+                HELPERS.normalizeModel(aModel);
+                let scene = new MeshWrapper(aModel);
 
-                let t = performance.now();
+                // Add click/hover events
+                scene.onHover = e=>{
+                    document.body.style.cursor = "pointer";
+                }
+                scene.onEndHover = e=>{
+                    document.body.style.cursor = "default";
+                }
+                scene.onClick = e=>{
+                    window.open("/artifact.php?id=" + obj.userData.id, '_blank');
+                }
+
+                obj.add(scene.mesh);
+
+                // Load the teardrop
                 loader.load("../../files/glb/map_pointer.glb", gltf=>{
 
                     let teardrop = gltf.scene.children[0];
@@ -131,17 +149,16 @@ export default class DigSiteScene extends XRWorld {
                     obj.add(teardrop)
                 })
 
+                // Parse and set the position from coordinates
                 let pos_str = artifact[6].slice(1,-1).split(",");
                 let pos = []
                 pos_str.forEach(n=>pos.push(parseFloat(n)));
                 obj.position.set(...pos);
 
+                this.artifacts.push(obj);
                 this.addObjectToScene(obj);
 
-                // Add date to artifact
-                obj.date = new Date(artifact[5])
-                this.artifacts.push(obj);
-
+                // Add to dates
                 if (Array.from(this.artifactDates.keys()).includes(artifact[5])) {
                     this.artifactDates.get(artifact[5]).push(obj);
                 }
@@ -269,7 +286,7 @@ export default class DigSiteScene extends XRWorld {
             xrControls.mesh.visible = false;
         })
 
-        let lastHoveredMesh = null;
+        this.lastHoveredMesh = null;
         this.xrSliderPtr = xrSliderPtr;
         this.isHoveringSliderPtr = false;
 
@@ -279,7 +296,7 @@ export default class DigSiteScene extends XRWorld {
 
                 let topMesh = e.intersects[0].object;
 
-                if (topMesh == lastHoveredMesh) {
+                if (topMesh == this.lastHoveredMesh) {
                     // Not much to do here
                 }
                 else {
@@ -293,36 +310,36 @@ export default class DigSiteScene extends XRWorld {
                         topMesh.uiElement._onHover();
                     }
 
-                    if (lastHoveredMesh != null) {
+                    if (this.lastHoveredMesh != null) {
 
-                        if (lastHoveredMesh.uiElement) {
-                            if (lastHoveredMesh.uiElement.name === "sliderPtr") {
+                        if (this.lastHoveredMesh.uiElement) {
+                            if (this.lastHoveredMesh.uiElement.name === "sliderPtr") {
 
                                 this.isHoveringSliderPtr = false;
                             }
-                            lastHoveredMesh.uiElement._onEndHover();
+                            this.lastHoveredMesh.uiElement._onEndHover();
                         }
                     }
                 }
 
-                lastHoveredMesh = topMesh;
+                this.lastHoveredMesh = topMesh;
             }
             else {
 
-                if (lastHoveredMesh == null) {
+                if (this.lastHoveredMesh == null) {
 
                 }
                 else {
 
-                    if (lastHoveredMesh.uiElement) {
-                        if (lastHoveredMesh.uiElement.name === "sliderPtr") {
+                    if (this.lastHoveredMesh.uiElement) {
+                        if (this.lastHoveredMesh.uiElement.name === "sliderPtr") {
                             this.isHoveringSliderPtr = false;
                         }
-                        lastHoveredMesh.uiElement._onEndHover();
+                        this.lastHoveredMesh.uiElement._onEndHover();
                     }
                 }
 
-                lastHoveredMesh = null;
+                this.lastHoveredMesh = null;
             }
         });
 
@@ -336,10 +353,28 @@ export default class DigSiteScene extends XRWorld {
         // console.log(this.player.position)
 
         this.handleSlider();
+        this.handleClicks();
 
         this.controls.update(this.deltaTime());
 
 
+    }
+
+    handleClicks() {
+
+        if (!this.__lastClick)
+            this.__lastClick = 0;
+
+        if (performance.now() - this.__lastClick > 500 && this.controls.pointerIsDown()) {
+            if (this.lastHoveredMesh) {
+
+                if (this.lastHoveredMesh.uiElement) 
+                    this.lastHoveredMesh.uiElement._onClick();
+            }
+
+            this.__lastClick = performance.now();
+        }
+        
     }
 
     handleSlider() {
@@ -370,7 +405,7 @@ export default class DigSiteScene extends XRWorld {
 
                 let arr = Array.from(this.artifactDates.values());
                 // Sort the dates in ascending order
-                arr.sort((a,b)=>{return b[0].date - a[0].date})
+                arr.sort((a,b)=>{return b[0].userData.date - a[0].userData.date})
                 let arrLength = arr.length;
                 // Floor the values at intervals of 1 (any date) + 1 for each date
                 let currNum = Math.floor(((this.xrSliderPtr.mesh.position.x + 0.627) / 0.85) * (1 + arrLength));
@@ -408,11 +443,9 @@ export default class DigSiteScene extends XRWorld {
                         }
                     }
 
-                    this.dateText.innerText = arr[currNum][0].date.toDateString();
+                    this.dateText.innerText = arr[currNum][0].userData.date.toDateString();
                     this.xrDate.update();
                 }
-
-
 
                 this.controls.canRotate = false;
             }
