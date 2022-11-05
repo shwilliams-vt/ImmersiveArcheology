@@ -1,6 +1,8 @@
 import { THREE } from "./xrworld.js";
+import { XRControllerModelFactory } from 'https://unpkg.com/three@0.126.0/examples/jsm/webxr/XRControllerModelFactory.js';
 
 let RENDERER = null
+const controllerModelFactory = new XRControllerModelFactory();
 
 function addClickEvent(mouseButton, onStart, onEnd) {
 
@@ -218,6 +220,10 @@ export default class Controller {
                 
                 // Update our controllers
                 e.removed.forEach(removedSource=>{
+
+                    // Remove controller model
+                    scope.scene.remove( controller.controllerGrip );
+
                     scope.XR_CONTROLLERS = scope.XR_CONTROLLERS.filter(src=>src != removedSource);
                 })
                 e.added.forEach(addedSource=>{
@@ -226,7 +232,25 @@ export default class Controller {
                 // Register controller numbers
                 let numControllers = 0;
                 scope.XR_CONTROLLERS.forEach(controller=>{
+
+                    // Controller ID
                     controller.controllerNumber = numControllers;
+
+                    // Controller model
+                    const controllerGrip = scope.renderer.xr.getControllerGrip(numControllers);
+                    controllerGrip.matrixWorld.copy(controllerGrip.matrix)
+                    const model = controllerModelFactory.createControllerModel( controllerGrip );
+                    controllerGrip.add( model );
+                    controller.controllerGrip = controllerGrip;
+                    scope.scene.add( model );
+
+                    function move(t) {
+                        requestAnimationFrame(move);
+                        controllerGrip.position.y = Math.sin(t/100);
+                    }
+                    requestAnimationFrame(move);
+
+                    // Increase for ID
                     numControllers++;
                 })
 
@@ -415,8 +439,6 @@ export default class Controller {
                 tempMatrix.extractRotation(raySpace.matrix);
                 this.RAYCASTER.ray.origin.setFromMatrixPosition(raySpace.matrix);
                 this.RAYCASTER.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-
-                console.log(this.RAYCASTER.ray.origin, this.RAYCASTER.ray.direction);
 
                 firstPoint.copy(this.RAYCASTER.ray.origin);
             }

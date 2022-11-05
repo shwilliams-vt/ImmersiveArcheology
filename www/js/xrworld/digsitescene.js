@@ -39,6 +39,9 @@ export default class DigSiteScene extends XRWorld {
 
     start() {
 
+        // Retain scope
+        let scope = this;
+
         // Rotate camera to face forward
         this.mainCamera.position.set(0,1.6,0);
         this.mainCamera.lookAt(0,0,-1)
@@ -115,6 +118,18 @@ export default class DigSiteScene extends XRWorld {
                 HELPERS.normalizeModel(scene);
 
                 obj.add(scene);
+
+                let t = performance.now();
+                loader.load("../../files/glb/map_pointer.glb", gltf=>{
+
+                    let teardrop = gltf.scene.children[0];
+                    teardrop.scale.setScalar(0.2)
+                    teardrop.position.y = 1.2;
+                    scope.updateQueue.push((t,dt)=>{
+                        teardrop.rotation.z += 0.001 * dt
+                    })
+                    obj.add(teardrop)
+                })
 
                 let pos_str = artifact[6].slice(1,-1).split(",");
                 let pos = []
@@ -254,7 +269,6 @@ export default class DigSiteScene extends XRWorld {
             xrControls.mesh.visible = false;
         })
 
-        let scope = this;
         let lastHoveredMesh = null;
         this.xrSliderPtr = xrSliderPtr;
         this.isHoveringSliderPtr = false;

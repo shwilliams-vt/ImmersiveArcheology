@@ -9,6 +9,8 @@ class XRWorld {
     // Scenes
     scene = null;
 
+    
+
     updateCamerasOnResize(aspect) {
         this.cameras.forEach(camera=>{
             camera.aspect = aspect;
@@ -21,6 +23,10 @@ class XRWorld {
 
         var scene = new THREE.Scene();
         this.scene = scene;
+
+        // Elapsed time
+        this._elapsed = 0;
+        this._deltaTime = 0;
 
         // Create a basic perspective camera
         this.mainCamera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
@@ -64,6 +70,9 @@ class XRWorld {
         // Add clock
         this.clock = new THREE.Clock();
 
+        // update queue
+        this.updateQueue = []
+
         // Add premade objects
         this.addObjectToScene(this.mainCamera);
 
@@ -82,12 +91,21 @@ class XRWorld {
             this.start();
 
         // render(this);
-        this.renderer.setAnimationLoop(() => { this.__update() });
+        this.renderer.setAnimationLoop((t) => { this.__update(t) });
     }
 
-    __update() {
+    __update(t) {
+
+        this._deltaTime = t - this._elapsed;
+        this._elapsed = t;
+
         if (this.update)
-            this.update();
+            this.update(this.elapsed, this.deltaTime);
+
+        // update queue
+        this.updateQueue.forEach(lambda=>{
+            lambda(this._elapsed, this._deltaTime)
+        })
 
         // Render the scene
         this.renderer.render(this.scene, this.mainCamera);
