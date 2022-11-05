@@ -33,7 +33,7 @@ export default class DigSiteScene extends XRWorld {
         // Enable XR
         document.body.appendChild( VRButton.createButton( this.renderer ) );
         this.renderer.xr.enabled = true;
-    }    
+    }
 
     // Demo update and start implementation
 
@@ -58,7 +58,7 @@ export default class DigSiteScene extends XRWorld {
         // loader.load(digSite[3], gltf=>{
 
         //     let scene = gltf.scene.children[0];
-            
+
         //     this.addObjectToScene(scene);
 
         // }, undefined, e=>console.log("Could not load model at: " + digSite[3] + ", error: " + e)
@@ -69,7 +69,7 @@ export default class DigSiteScene extends XRWorld {
 
         //     var mat = new THREE.PointsMaterial({size:POINT_CLOUD_POINT_SIZE, vertexColors: true});
         //     var mesh = new THREE.Points(points, mat);
-            
+
         //     this.addObjectToScene(mesh);
 
         //     // console.log(points)
@@ -88,7 +88,7 @@ export default class DigSiteScene extends XRWorld {
         //     // const mesh = new THREE.Mesh(points, material)
         //     // mesh.rotateX(-Math.PI / 2)
         //     // this.addObjectToScene(mesh)
-            
+
         //     const box = new THREE.Box3();
 
         //     // ensure the bounding box is computed for its geometry
@@ -120,7 +120,7 @@ export default class DigSiteScene extends XRWorld {
                 let pos = []
                 pos_str.forEach(n=>pos.push(parseFloat(n)));
                 obj.position.set(...pos);
-                
+
                 this.addObjectToScene(obj);
 
                 // Add date to artifact
@@ -177,7 +177,7 @@ export default class DigSiteScene extends XRWorld {
 
         let desktopControls = new Block2D({
             width:.8,
-            height:0.6,
+            height:0.5,
             x:0,
             y:0,
             z:-1,
@@ -187,7 +187,7 @@ export default class DigSiteScene extends XRWorld {
         });
         let xrControls = new Block2D({
             width:1,
-            height:0.7,
+            height:0.5,
             x:0,
             y:0,
             z:-1,
@@ -209,10 +209,10 @@ export default class DigSiteScene extends XRWorld {
         dateText.style.margin = "0px"
         dateText.style.fontSize = "11px";
         this.dateText = dateText;
-        let xrDate = new HTML2D(dateText, {width:1.5,height:2.0})
+        let xrDate = new HTML2D(dateText, {width:1.5,height:0.1})
         this.xrDate = xrDate;
         xrControlMenu.mesh.add(xrDate.mesh)
-        xrDate.mesh.position.set(.03,-.55,.01);
+        xrDate.mesh.position.set(.03,.3,.005);
 
         let slider = document.createElement("div");
         slider.style.height = "3px"
@@ -231,7 +231,7 @@ export default class DigSiteScene extends XRWorld {
         xrControlMenu.mesh.add(xrSlider.mesh);
         xrSlider.mesh.position.set(0.05,0.5,0.01);
 
-        let xrSliderPtr = new HTML2D(sliderPtr, {width:0.18,height:0.18}) 
+        let xrSliderPtr = new HTML2D(sliderPtr, {width:0.18,height:0.18})
         xrSliderPtr.name = "sliderPtr"
         xrSlider.mesh.add(xrSliderPtr.mesh);
         xrSliderPtr.mesh.position.set(-.627,0.05,0.1);
@@ -260,40 +260,48 @@ export default class DigSiteScene extends XRWorld {
         this.isHoveringSliderPtr = false;
         this.pointerIsDown = false;
         this.controls.addEventListener("onhover", e=>{
-            let mesh = e.mesh;
 
-            if (mesh != lastHoveredMesh) {
+            if (e.intersects.length > 0) {
+                let uiElements = e.intersects.filter(p=>p.object.uiElement!==undefined);
 
-                if (mesh != null) {
+                uiElements.forEach(intersect=>{
+                    let mesh = intersect.object;
+                    console.log(mesh.uiElement.name)
+                    if (mesh != lastHoveredMesh) {
 
-                    if (mesh.uiElement) {
-                        mesh.uiElement._onHover()
+                        if (mesh != null) {
 
-                        if (mesh.uiElement.name == "sliderPtr")
-                            scope.isHoveringSliderPtr = true;
-                    }                    
-                }
-                else {
-                    
-                }
-    
-                // Set lastHoveredMesh
-                if (lastHoveredMesh != null) {
+                            if (mesh.uiElement) {
+                                mesh.uiElement._onHover()
 
-                    if (lastHoveredMesh.uiElement) {
-                        lastHoveredMesh.uiElement._onEndHover()
+                                if (mesh.uiElement.name == "sliderPtr")
+                                    scope.isHoveringSliderPtr = true;
+                            }
+                        }
+                        else {
 
-                        if (lastHoveredMesh.uiElement.name == "sliderPtr")
-                            scope.isHoveringSliderPtr = false;
+                        }
+
+                        // Set lastHoveredMesh
+                        if (lastHoveredMesh != null) {
+
+                            if (lastHoveredMesh.uiElement) {
+                                lastHoveredMesh.uiElement._onEndHover()
+
+                                if (lastHoveredMesh.uiElement.name == "sliderPtr")
+                                    scope.isHoveringSliderPtr = false;
+                            }
+                        }
+                        else {
+
+                        }
+
+                        lastHoveredMesh = mesh;
                     }
-                }
-                else {
-                    
-                }
-
-                lastHoveredMesh = mesh;
+                });
             }
-        });       
+            else lastHoveredMesh = null;
+        });
 
     }
 
@@ -308,23 +316,27 @@ export default class DigSiteScene extends XRWorld {
 
         this.controls.update(this.deltaTime());
 
-        
+
     }
 
     handleSlider() {
         if (this.isHoveringSliderPtr && this.controls.pointerIsDown()) {
 
-            let currSliderPos = this.xrSliderPtr.mesh.position.x;
-            let ptrDir = this.controls.getDeltaPointer().x;
-            let canSlideLeft = currSliderPos < .223 && ptrDir > 0;
-            let canSlideRight = currSliderPos > -.627 && ptrDir < 0;
+            let currSliderPos = this.xrSliderPtr.mesh.position;
+            let ptrDelta = new THREE.Vector3();
+            ptrDelta.copy(this.controls.getPointerLocation());
+            this.xrSliderPtr.mesh.parent.worldToLocal(ptrDelta)
+            ptrDelta.sub(currSliderPos)
+
+            let canSlideLeft = currSliderPos.x < .223 && ptrDelta.x > 0;
+            let canSlideRight = currSliderPos.x > -.627 && ptrDelta.x < 0;
 
             if (canSlideLeft || canSlideRight) {
 
-                let amt = ptrDir;
+                let amt = ptrDelta.x;
                 if (Math.abs(amt) >= 0.01)
                     amt /= 440;
-                
+
                 this.xrSliderPtr.mesh.translateOnAxis(new THREE.Vector3(1,0,0), amt);
 
                 let arr = Array.from(this.artifactDates.values());
@@ -333,7 +345,7 @@ export default class DigSiteScene extends XRWorld {
                 let arrLength = arr.length;
                 // Floor the values at intervals of 1 (any date) + 1 for each date
                 let currNum = Math.floor(((this.xrSliderPtr.mesh.position.x + 0.627) / 0.85) * (1 + arrLength));
-                
+
                 // The math checks out here, this is just to remove the extremity values
                 if (currNum < 0)
                     currNum = 0;
@@ -342,7 +354,7 @@ export default class DigSiteScene extends XRWorld {
 
                 // Switch order so any starts first then lowest to highest
                 currNum = arrLength - currNum;
-                
+
                 // If currNum is arrLength then we show all artifacts
                 if (currNum == arrLength) {
                     for (let i = 0; i < arrLength; i++) {
@@ -370,8 +382,8 @@ export default class DigSiteScene extends XRWorld {
                     this.dateText.innerText = arr[currNum][0].date.toDateString();
                     this.xrDate.update();
                 }
-                
-                
+
+
 
                 this.controls.canRotate = false;
             }

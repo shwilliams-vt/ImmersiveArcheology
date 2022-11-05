@@ -67,6 +67,8 @@ export default class Controller {
         // Intersecting meshes (raycasting)
         this.raycastMaxDistance = 50;
         this.RAYCASTER = new THREE.Raycaster();
+        this.RAYCASTER.far = 50;
+        this.LAST_RAYCAST_LOC = new THREE.Vector3();
         this.MOUSE_PTR_LOCATION = new THREE.Vector2();
         // Musy
         this.MOUSE_PTR_LOCATION.x = 'a';
@@ -75,6 +77,15 @@ export default class Controller {
         // XR Sources
         this.XR_CONTROLLERS = []
         this.XR_STATE = {}
+
+        // XR Guides
+        let scope = this;
+        {
+            const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+            const geometry = new THREE.BufferGeometry();
+            scope.guideLine = new THREE.Line( geometry, material );
+            scope.scene.add(scope.guideLine);
+        }
 
         // Events
         this.eventListeners = new Map();
@@ -90,7 +101,7 @@ export default class Controller {
         if (this.canMove)
             this.translateForward(deltaTime)
 
-        this.getIntersection();
+        this.getIntersections();
 
         this.pointerIsDown()
     }
@@ -169,6 +180,8 @@ export default class Controller {
 
         // Raycast Event
         RENDERER.addEventListener("pointermove", e=>{
+
+            let rect = RENDERER.getBoundingClientRect();
         
             // scope.MOUSE_PTR_LOCATION.x = ( e.clientX / window.innerWidth ) * 2 - 1;
             // scope.MOUSE_PTR_LOCATION.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
@@ -386,12 +399,16 @@ export default class Controller {
         }
     }
 
-    getIntersection() {
+    getIntersections() {
+
+        //create a blue LineBasicMaterial
+        let firstPoint = new THREE.Vector3();
 
         if (!this.IN_XR) {
 
             // console.log(this.MOUSE_PTR_LOCATION)
             this.RAYCASTER.setFromCamera(this.MOUSE_PTR_LOCATION, this.player.camera);
+            this.player.camera.getWorldPosition(firstPoint)
 
         }
         else {
@@ -405,9 +422,12 @@ export default class Controller {
                 tempMatrix.identity().extractRotation(raySpace.matrixWorld);
                 this.RAYCASTER.ray.origin.setFromMatrixPosition(raySpace.matrixWorld);
                 this.RAYCASTER.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+
+                firstPoint.copy(this.RAYCASTER.ray.origin);
             }
             else {
                 this.RAYCASTER.setFromCamera(new THREE.Vector2(), this.player.camera);
+                this.player.camera.getWorldPosition(firstPoint)
 
             }
         }
@@ -417,19 +437,26 @@ export default class Controller {
         let mesh = null;
         if (intersects.length > 0) {
             mesh = intersects[0].object;
-        }
-
-
-        this.dispatchEvent("onhover", {mesh:mesh})
-    }
-
-    getDeltaPointer() {
-        if (this.IN_XR) {
-            
+            this.LAST_RAYCAST_LOC.copy(intersects[0].point)
+            // console.log(mesh.uiElement)
         }
         else {
-            return this.MOUSE_DELTA;
+            let p = new THREE.Vector3();
+            p.copy(this.RAYCASTER.ray.direction)
+            p.multiplyScalar(this.RAYCASTER.far)
+            p.add(this.RAYCASTER.ray.origin);
+            this.LAST_RAYCAST_LOC.copy(p)
         }
+
+        this.guideLine.geometry == new THREE.BufferGeometry().setFromPoints( [firstPoint, this.LAST_RAYCAST_LOC] );
+        // console.log(firstPoint)
+        // console.log(this.LAST_RAYCAST_LOC)
+
+        this.dispatchEvent("onhover", {intersects:intersects})
+    }
+
+    getPointerLocation() {
+        return this.LAST_RAYCAST_LOC;
     }
 
     pointerIsDown() {
