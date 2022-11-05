@@ -209,10 +209,10 @@ export default class DigSiteScene extends XRWorld {
         dateText.style.margin = "0px"
         dateText.style.fontSize = "11px";
         this.dateText = dateText;
-        let xrDate = new HTML2D(dateText, {width:1.5,height:0.1})
+        let xrDate = new HTML2D(dateText, {width:1.5,height:0.15})
         this.xrDate = xrDate;
         xrControlMenu.mesh.add(xrDate.mesh)
-        xrDate.mesh.position.set(.03,.3,.005);
+        xrDate.mesh.position.set(.03,.4,.005);
 
         let slider = document.createElement("div");
         slider.style.height = "3px"
@@ -334,8 +334,10 @@ export default class DigSiteScene extends XRWorld {
 
             let currSliderPos = this.xrSliderPtr.mesh.position;
             let ptrDelta = new THREE.Vector3();
-            ptrDelta.copy(this.controls.getPointerLocation());
-            this.xrSliderPtr.mesh.parent.worldToLocal(ptrDelta)
+            let ptrPos = new THREE.Vector3();
+            ptrPos.copy(this.controls.getPointerLocation());
+            this.xrSliderPtr.mesh.parent.worldToLocal(ptrPos)
+            ptrDelta.copy(ptrPos);
             ptrDelta.sub(currSliderPos)
 
             let canSlideLeft = currSliderPos.x < .223 && ptrDelta.x > 0;
@@ -345,11 +347,12 @@ export default class DigSiteScene extends XRWorld {
             if (canSlideLeft || canSlideRight) {
 
 
-                let amt = ptrDelta.x;
-                if (Math.abs(amt) >= 0.01)
-                    amt /= 440;
+                // let amt = ptrDelta.x;
+                // if (Math.abs(amt) >= 0.01)
+                //     amt /= 440;
 
-                this.xrSliderPtr.mesh.translateOnAxis(new THREE.Vector3(1,0,0), amt);
+                // this.xrSliderPtr.mesh.translateOnAxis(new THREE.Vector3(1,0,0), amt);
+                this.xrSliderPtr.mesh.position.x = ptrPos.x;//(new THREE.Vector3(1,0,0), amt);
 
                 let arr = Array.from(this.artifactDates.values());
                 // Sort the dates in ascending order
