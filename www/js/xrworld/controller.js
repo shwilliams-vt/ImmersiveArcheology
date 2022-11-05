@@ -81,9 +81,10 @@ export default class Controller {
         // XR Guides
         let scope = this;
         {
-            const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+            const material = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
             const geometry = new THREE.BufferGeometry();
             scope.guideLine = new THREE.Line( geometry, material );
+            scope.guideLine.frustumCulled = false;
             scope.scene.add(scope.guideLine);
         }
 
@@ -181,13 +182,8 @@ export default class Controller {
         // Raycast Event
         RENDERER.addEventListener("pointermove", e=>{
 
-            let rect = RENDERER.getBoundingClientRect();
-        
-            // scope.MOUSE_PTR_LOCATION.x = ( e.clientX / window.innerWidth ) * 2 - 1;
-            // scope.MOUSE_PTR_LOCATION.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
-
             var bounds = RENDERER.getBoundingClientRect();
-            // get the mouse coordinates, subtract the canvas top left and any scrolling
+            // get the mouse coordinates, subtract the canvas top left
             let x = e.pageX - bounds.left;
             let y = e.pageY - bounds.top;
             scope.MOUSE_PTR_LOCATION.x = ( x / (bounds.width) ) * 2 - 1;
@@ -405,7 +401,7 @@ export default class Controller {
 
             // console.log(this.MOUSE_PTR_LOCATION)
             this.RAYCASTER.setFromCamera(this.MOUSE_PTR_LOCATION, this.player.camera);
-            this.player.camera.getWorldPosition(firstPoint)
+            this.player.getWorldPosition(firstPoint)
 
         }
         else {
@@ -416,15 +412,17 @@ export default class Controller {
 
                 let tempMatrix = new THREE.Matrix4();
                 let raySpace = this.renderer.xr.getController(rightController.controllerNumber)
-                tempMatrix.identity().extractRotation(raySpace.matrixWorld);
-                this.RAYCASTER.ray.origin.setFromMatrixPosition(raySpace.matrixWorld);
+                tempMatrix.extractRotation(raySpace.matrix);
+                this.RAYCASTER.ray.origin.setFromMatrixPosition(raySpace.matrix);
                 this.RAYCASTER.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+
+                console.log(this.RAYCASTER.ray.origin, this.RAYCASTER.ray.direction);
 
                 firstPoint.copy(this.RAYCASTER.ray.origin);
             }
             else {
                 this.RAYCASTER.setFromCamera(new THREE.Vector2(), this.player.camera);
-                this.player.camera.getWorldPosition(firstPoint)
+                this.player.getWorldPosition(firstPoint)
 
             }
         }
@@ -445,9 +443,7 @@ export default class Controller {
             this.LAST_RAYCAST_LOC.copy(p)
         }
 
-        this.guideLine.geometry == new THREE.BufferGeometry().setFromPoints( [firstPoint, this.LAST_RAYCAST_LOC] );
-        // console.log(firstPoint)
-        // console.log(this.LAST_RAYCAST_LOC)
+        this.guideLine.geometry.setFromPoints( [firstPoint, this.LAST_RAYCAST_LOC] );
 
         this.dispatchEvent("onhover", {intersects:intersects})
     }
