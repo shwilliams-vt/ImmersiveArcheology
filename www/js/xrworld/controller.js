@@ -170,8 +170,18 @@ export default class Controller {
         // Raycast Event
         RENDERER.addEventListener("pointermove", e=>{
         
-            scope.MOUSE_PTR_LOCATION.x = ( e.clientX / window.innerWidth ) * 2 - 1;
-            scope.MOUSE_PTR_LOCATION.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
+            // scope.MOUSE_PTR_LOCATION.x = ( e.clientX / window.innerWidth ) * 2 - 1;
+            // scope.MOUSE_PTR_LOCATION.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
+
+            var bounds = RENDERER.getBoundingClientRect();
+            // get the mouse coordinates, subtract the canvas top left and any scrolling
+            let x = e.pageX - bounds.left;
+            let y = e.pageY - bounds.top;
+            scope.MOUSE_PTR_LOCATION.x = ( x / (bounds.width) ) * 2 - 1;
+            scope.MOUSE_PTR_LOCATION.y = - ( y / (bounds.height) ) * 2 + 1;
+
+
+            console.log(scope.MOUSE_PTR_LOCATION)
             
         })
 
