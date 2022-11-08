@@ -15,7 +15,8 @@ import { createDOMElem, createDOMElemWithText } from "../createdomelem.js";
 
 // Demo gltf: https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf
 
-const loader = new GLTFLoader();
+const useGLTFDigSite = true;
+const gltfloader = new GLTFLoader();
 const plyloader = new PLYLoader();
 
 let digSite, artifacts;
@@ -57,67 +58,72 @@ export default class DigSiteScene extends XRWorld {
         // Holds all artifacts
         this.artifacts = [];
         this.artifactDates = new Map();
+        this.raycastObjects = [];
 
         // Load scene
-        // loader.load(digSite[3], gltf=>{
+        if (useGLTFDigSite) {
+            gltfloader.load(digSite[3], gltf=>{
 
-        //     let scene = gltf.scene.children[0];
+                let scene = gltf.scene.children[0];
 
-        //     this.addObjectToScene(scene);
+                this.addObjectToScene(scene);
 
-        // }, undefined, e=>console.log("Could not load model at: " + digSite[3] + ", error: " + e)
-        // );
-        // plyloader.load(digSite[3], points=>{
+            }, undefined, e=>console.log("Could not load model at: " + digSite[3] + ", error: " + e)
+            );
+        }
+        else {
+            plyloader.load(digSite[3], points=>{
 
-        //     // let scene = gltf.scene.children[0];
+                // let scene = gltf.scene.children[0];
 
-        //     var mat = new THREE.PointsMaterial({size:POINT_CLOUD_POINT_SIZE, vertexColors: true});
-        //     var mesh = new THREE.Points(points, mat);
+                var mat = new THREE.PointsMaterial({size:POINT_CLOUD_POINT_SIZE, vertexColors: true});
+                var mesh = new THREE.Points(points, mat);
 
-        //     this.addObjectToScene(mesh);
+                this.addObjectToScene(mesh);
 
-        //     // console.log(points)
+                // console.log(points)
 
-        //     // const material = new THREE.MeshPhysicalMaterial({
-        //     //     color: 0xb2ffc8,
-        //     //     metalness: 0,
-        //     //     roughness: 0,
-        //     //     transparent: true,
-        //     //     transmission: 1.0,
-        //     //     side: THREE.DoubleSide,
-        //     //     clearcoat: 1.0,
-        //     //     clearcoatRoughness: 0.25
-        //     // })
-        //     // points.computeVertexNormals()
-        //     // const mesh = new THREE.Mesh(points, material)
-        //     // mesh.rotateX(-Math.PI / 2)
-        //     // this.addObjectToScene(mesh)
+                // const material = new THREE.MeshPhysicalMaterial({
+                //     color: 0xb2ffc8,
+                //     metalness: 0,
+                //     roughness: 0,
+                //     transparent: true,
+                //     transmission: 1.0,
+                //     side: THREE.DoubleSide,
+                //     clearcoat: 1.0,
+                //     clearcoatRoughness: 0.25
+                // })
+                // points.computeVertexNormals()
+                // const mesh = new THREE.Mesh(points, material)
+                // mesh.rotateX(-Math.PI / 2)
+                // this.addObjectToScene(mesh)
 
-        //     const box = new THREE.Box3();
+                const box = new THREE.Box3();
 
-        //     // ensure the bounding box is computed for its geometry
-        //     // this should be done only once (assuming static geometries)
-        //     mesh.geometry.computeBoundingBox();
+                // ensure the bounding box is computed for its geometry
+                // this should be done only once (assuming static geometries)
+                mesh.geometry.computeBoundingBox();
 
-        //     // ...
+                // ...
 
-        //     // in the animation loop, compute the current bounding box with the world matrix
-        //     box.copy( mesh.geometry.boundingBox ).applyMatrix4( mesh.matrixWorld );
-        //     console.log(box)
+                // in the animation loop, compute the current bounding box with the world matrix
+                box.copy( mesh.geometry.boundingBox ).applyMatrix4( mesh.matrixWorld );
+                console.log(box)
 
-        // }, undefined, e=>console.log("Could not load model at: " + digSite[3] + ", error: " + e)
-        // );
+            }, undefined, e=>console.log("Could not load model at: " + digSite[3] + ", error: " + e)
+            );
+        }
 
         // Load artifacts
         artifacts.forEach(artifact=>{
 
             let modelLink = artifact[4]
-            loader.load(modelLink, gltf=>{
+            gltfloader.load(modelLink, gltf=>{
 
                 let obj = new THREE.Object3D();
                 // Add id and date to artifact
                 obj.userData.id = artifact[0]
-                obj.userData.date = new Date(artifact[5])
+                obj.userData.date = new Date(artifact[5].replace(/-/g, '\/'))
 
                 // Artifact model
                 let aModel = gltf.scene.children[0]
@@ -137,12 +143,15 @@ export default class DigSiteScene extends XRWorld {
 
                 obj.add(scene.mesh);
 
+                // Add to raycast objects
+                scope.raycastObjects.push(scene.mesh);
+
                 // Load the teardrop
-                loader.load("../../files/glb/map_pointer.glb", gltf=>{
+                gltfloader.load("../../files/glb/map_pointer.glb", gltf=>{
 
                     let teardrop = gltf.scene.children[0];
                     teardrop.scale.setScalar(0.2)
-                    teardrop.position.y = 1.2;
+                    teardrop.position.y = 1.5;
                     scope.updateQueue.push((t,dt)=>{
                         teardrop.rotation.z += 0.001 * dt
                     })
@@ -169,8 +178,6 @@ export default class DigSiteScene extends XRWorld {
             }, undefined, e=>console.log("Could not load model at: " + modelLink + ", error: " + e)
             );
         });
-
-        console.log(this.artifactDates)
 
         // Add light to main camera
         this.mainCamera.add(this.light);
@@ -206,6 +213,9 @@ export default class DigSiteScene extends XRWorld {
         this.player.add(xrControlMenu.mesh);
         xrControlMenu.mesh.position.set(0,0,-1);
         xrControlMenu.mesh.rotateX(-Math.PI/4)
+
+        // Add to raycast objects
+        scope.raycastObjects.push(xrControlMenu.mesh)
 
         let desktopControls = new Block2D({
             width:.8,
@@ -275,6 +285,9 @@ export default class DigSiteScene extends XRWorld {
             sliderPtr.style.border = "none";
             xrSliderPtr.update()
         }
+
+        // Set raycast objects
+        this.controls.raycastObjects = this.raycastObjects;
 
         // Set up callbacks
         this.controls.addEventListener("onstartxr", e=>{

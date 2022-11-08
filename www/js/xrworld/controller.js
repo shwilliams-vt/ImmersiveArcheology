@@ -449,7 +449,7 @@ export default class Controller {
             }
         }
 
-        let intersects = this.RAYCASTER.intersectObjects( this.scene.children, true );
+        let intersects = this.RAYCASTER.intersectObjects( this.getRaycastObjects(), true );
 
         let mesh = null;
         if (intersects.length > 0) {
@@ -468,6 +468,12 @@ export default class Controller {
         this.guideLine.geometry.setFromPoints( [firstPoint, this.LAST_RAYCAST_LOC] );
 
         this.dispatchEvent("onhover", {intersects:intersects})
+    }
+
+    getRaycastObjects() {
+        if (this.raycastObjects)
+            return this.raycastObjects;
+        return []
     }
 
     getPointerLocation() {
