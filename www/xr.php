@@ -12,10 +12,7 @@
 
     <?php
 
-    $dbServername = "localhost";
-    $dbUsername = "manager";
-    $dbPassword = "X6m&T@Evr,[s@,n";
-    $dbName = "archeology";
+    include($_SERVER['DOCUMENT_ROOT']."/inc/dbinfo.php");
     $dbTableName = "artifacts";
 
     $connection = mysqli_connect($dbServername, $dbUsername, $dbPassword, $dbName);

@@ -17,10 +17,7 @@
 
     include($_SERVER['DOCUMENT_ROOT']."/includes/header.php");
 
-    $dbServername = "localhost";
-    $dbUsername = "manager";
-    $dbPassword = "X6m&T@Evr,[s@,n";
-    $dbName = "archeology";
+    include($_SERVER['DOCUMENT_ROOT']."/inc/dbinfo.php");
     $dbTableName = "dig_sites";
 
     $connection = mysqli_connect($dbServername, $dbUsername, $dbPassword, $dbName);
