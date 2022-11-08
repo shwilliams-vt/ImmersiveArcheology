@@ -19,6 +19,8 @@ const useGLTFDigSite = true;
 const gltfloader = new GLTFLoader();
 const plyloader = new PLYLoader();
 
+const loadingDOM = document.createElement("div");
+
 let digSite, artifacts;
 function init(info) {
     digSite = info.digSite;
@@ -39,326 +41,363 @@ export default class DigSiteScene extends XRWorld {
 
     // Demo update and start implementation
 
-    start() {
+    async start() {
+
+        // Set up loading state
+        loadingDOM.style.width = "100%";
+        loadingDOM.style.height = "100%";
+        loadingDOM.style.position = "absolute";
+        loadingDOM.style.top = "0px";
+        loadingDOM.style.display = "flex";
+        loadingDOM.style.alignItems = "center";
+        loadingDOM.style.justifyContent = "center";
+        let _t1 = createDOMElemWithText("h2", "Loading...")
+        loadingDOM.appendChild(_t1);
+        this.domElem.parentElement.appendChild(loadingDOM)
+        console.log(loadingDOM.children)
 
         // Retain scope
         let scope = this;
 
-        // Rotate camera to face forward
-        this.mainCamera.position.set(0,1.6,0);
-        this.mainCamera.lookAt(0,0,-1)
+        // Set state to unready
+        this.ready = false;
 
-        this.light = new THREE.PointLight( 0xffffff, 1, 100 );
+        // Async load
+        await new Promise(async resolve=>{
+            
+            // Rotate camera to face forward
+            scope.mainCamera.position.set(0,1.6,0);
+            scope.mainCamera.lookAt(0,0,-1)
 
-        //this.cube = new THREE.Object3D();
-        var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        var material = new THREE.MeshStandardMaterial( {opacity:0.0, transparent:true} );
-        this.cube = new THREE.Mesh( geometry, material );
+            scope.light = new THREE.PointLight( 0xffffff, 1, 100 );
 
-        // Holds all artifacts
-        this.artifacts = [];
-        this.artifactDates = new Map();
-        this.raycastObjects = [];
+            //scope.cube = new THREE.Object3D();
+            var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+            var material = new THREE.MeshStandardMaterial( {opacity:0.0, transparent:true} );
+            scope.cube = new THREE.Mesh( geometry, material );
 
-        // Load scene
-        if (useGLTFDigSite) {
-            gltfloader.load(digSite[3], gltf=>{
+            // Holds all artifacts
+            scope.artifacts = [];
+            scope.artifactDates = new Map();
+            scope.raycastObjects = [];
 
-                let scene = gltf.scene.children[0];
+            // Load scene
+            await new Promise(async r=>{
+                if (useGLTFDigSite) {
+                    gltfloader.load(digSite[3], async gltf=>{
 
-                this.addObjectToScene(scene);
+                        let scene = gltf.scene.children[0];
 
-            }, undefined, e=>console.log("Could not load model at: " + digSite[3] + ", error: " + e)
-            );
-        }
-        else {
-            plyloader.load(digSite[3], points=>{
+                        scope.addObjectToScene(scene);
+                        r();
 
-                // let scene = gltf.scene.children[0];
-
-                var mat = new THREE.PointsMaterial({size:POINT_CLOUD_POINT_SIZE, vertexColors: true});
-                var mesh = new THREE.Points(points, mat);
-
-                this.addObjectToScene(mesh);
-
-                // console.log(points)
-
-                // const material = new THREE.MeshPhysicalMaterial({
-                //     color: 0xb2ffc8,
-                //     metalness: 0,
-                //     roughness: 0,
-                //     transparent: true,
-                //     transmission: 1.0,
-                //     side: THREE.DoubleSide,
-                //     clearcoat: 1.0,
-                //     clearcoatRoughness: 0.25
-                // })
-                // points.computeVertexNormals()
-                // const mesh = new THREE.Mesh(points, material)
-                // mesh.rotateX(-Math.PI / 2)
-                // this.addObjectToScene(mesh)
-
-                const box = new THREE.Box3();
-
-                // ensure the bounding box is computed for its geometry
-                // this should be done only once (assuming static geometries)
-                mesh.geometry.computeBoundingBox();
-
-                // ...
-
-                // in the animation loop, compute the current bounding box with the world matrix
-                box.copy( mesh.geometry.boundingBox ).applyMatrix4( mesh.matrixWorld );
-                console.log(box)
-
-            }, undefined, e=>console.log("Could not load model at: " + digSite[3] + ", error: " + e)
-            );
-        }
-
-        // Load artifacts
-        artifacts.forEach(artifact=>{
-
-            let modelLink = artifact[4]
-            gltfloader.load(modelLink, gltf=>{
-
-                let obj = new THREE.Object3D();
-                // Add id and date to artifact
-                obj.userData.id = artifact[0]
-                obj.userData.date = new Date(artifact[5].replace(/-/g, '\/'))
-
-                // Artifact model
-                let aModel = gltf.scene.children[0]
-                HELPERS.normalizeModel(aModel);
-                let scene = new MeshWrapper(aModel);
-
-                // Add click/hover events
-                scene.onHover = e=>{
-                    document.body.style.cursor = "pointer";
-                }
-                scene.onEndHover = e=>{
-                    document.body.style.cursor = "default";
-                }
-                scene.onClick = e=>{
-                    window.open("/artifact.php?id=" + obj.userData.id, '_blank');
-                }
-
-                obj.add(scene.mesh);
-
-                // Add to raycast objects
-                scope.raycastObjects.push(scene.mesh);
-
-                // Load the teardrop
-                gltfloader.load("../../files/glb/map_pointer.glb", gltf=>{
-
-                    let teardrop = gltf.scene.children[0];
-                    teardrop.scale.setScalar(0.2)
-                    teardrop.position.y = 1.5;
-                    scope.updateQueue.push((t,dt)=>{
-                        teardrop.rotation.z += 0.001 * dt
-                    })
-                    obj.add(teardrop)
-                })
-
-                // Parse and set the position from coordinates
-                let pos_str = artifact[6].slice(1,-1).split(",");
-                let pos = []
-                pos_str.forEach(n=>pos.push(parseFloat(n)));
-                obj.position.set(...pos);
-
-                this.artifacts.push(obj);
-                this.addObjectToScene(obj);
-
-                // Add to dates
-                if (Array.from(this.artifactDates.keys()).includes(artifact[5])) {
-                    this.artifactDates.get(artifact[5]).push(obj);
+                    }, undefined, e=>console.log("Could not load model at: " + digSite[3] + ", error: " + e)
+                    );
                 }
                 else {
-                    this.artifactDates.set(artifact[5], [obj]);
+                    plyloader.load(digSite[3], async points=>{
+
+                        // let scene = gltf.scene.children[0];
+
+                        var mat = new THREE.PointsMaterial({size:POINT_CLOUD_POINT_SIZE, vertexColors: true});
+                        var mesh = new THREE.Points(points, mat);
+
+                        scope.addObjectToScene(mesh);
+
+                        // console.log(points)
+
+                        // const material = new THREE.MeshPhysicalMaterial({
+                        //     color: 0xb2ffc8,
+                        //     metalness: 0,
+                        //     roughness: 0,
+                        //     transparent: true,
+                        //     transmission: 1.0,
+                        //     side: THREE.DoubleSide,
+                        //     clearcoat: 1.0,
+                        //     clearcoatRoughness: 0.25
+                        // })
+                        // points.computeVertexNormals()
+                        // const mesh = new THREE.Mesh(points, material)
+                        // mesh.rotateX(-Math.PI / 2)
+                        // this.addObjectToScene(mesh)
+
+                        const box = new THREE.Box3();
+
+                        // ensure the bounding box is computed for its geometry
+                        // this should be done only once (assuming static geometries)
+                        mesh.geometry.computeBoundingBox();
+
+                        // ...
+
+                        // in the animation loop, compute the current bounding box with the world matrix
+                        box.copy( mesh.geometry.boundingBox ).applyMatrix4( mesh.matrixWorld );
+                        
+                        r();
+
+                    }, undefined, e=>console.log("Could not load model at: " + digSite[3] + ", error: " + e)
+                    );
                 }
+            });
 
-            }, undefined, e=>console.log("Could not load model at: " + modelLink + ", error: " + e)
-            );
-        });
+            // Load artifacts
+            artifacts.forEach(async artifact=>{
 
-        // Add light to main camera
-        this.mainCamera.add(this.light);
+                
+                let modelLink = artifact[4];
+                await new Promise(async r=>{
+                    gltfloader.load(modelLink, async gltf=>{
 
-        // add camera to player
-        this.player = new THREE.Object3D()
-        this.removeObjectFromScene(this.mainCamera)
-        this.player.add(this.mainCamera);
-        this.player.camera = this.mainCamera;
-        this.addObjectToScene(this.player);
+                        let obj = new THREE.Object3D();
+                        // Add id and date to artifact
+                        obj.userData.id = artifact[0]
+                        obj.userData.date = new Date(artifact[5].replace(/-/g, '\/'))
 
-        this.controls = new Controller(this.player, this.scene, this.renderer);
+                        // Artifact model
+                        let aModel = gltf.scene.children[0]
+                        HELPERS.normalizeModel(aModel);
+                        let scene = new MeshWrapper(aModel);
 
-        // Add control menu for player
-        let controlMenu = document.createElement("div");
-        controlMenu.style.height = "130px"
-        controlMenu.style.width = "100px"
-        controlMenu.style.background = "rgba(10,10,100,0.7)";
-        controlMenu.style.color = "white";
-        controlMenu.style.padding = "5px";
-        controlMenu.style.display = "flex";
-        // controlMenu.style.justifyContent = "center";
-        controlMenu.style.flexDirection = "column";
-        controlMenu.style.alignItems = "center";
+                        // Add click/hover events
+                        scene.onHover = e=>{
+                            document.body.style.cursor = "pointer";
+                        }
+                        scene.onEndHover = e=>{
+                            document.body.style.cursor = "default";
+                        }
+                        scene.onClick = e=>{
+                            window.open("/artifact.php?id=" + obj.userData.id, '_blank');
+                        }
 
-        let _t = createDOMElemWithText("h2", "Controls")
-        _t.style.margin = "0px"
-        _t.style.fontSize = "14px";
-        controlMenu.appendChild(_t)
-        // document.body.append(controlMenu)
+                        obj.add(scene.mesh);
 
-        let xrControlMenu = new HTML2D(controlMenu, {width:1.5,height:2.0})
-        this.player.add(xrControlMenu.mesh);
-        xrControlMenu.mesh.position.set(0,0,-1);
-        xrControlMenu.mesh.rotateX(-Math.PI/4)
+                        // Add to raycast objects
+                        scope.raycastObjects.push(scene.mesh);
 
-        // Add to raycast objects
-        scope.raycastObjects.push(xrControlMenu.mesh)
+                        // Load the teardrop
+                        gltfloader.load("../../files/glb/map_pointer.glb", gltf=>{
 
-        let desktopControls = new Block2D({
-            width:.8,
-            height:0.5,
-            x:0,
-            y:0,
-            z:-1,
-            src:"/img/desktop_nav.png",
-            transparent:true,
-            opacity:1
-        });
-        let xrControls = new Block2D({
-            width:1,
-            height:0.5,
-            x:0,
-            y:0,
-            z:-1,
-            src:"/img/xr_nav.png",
-            transparent:true,
-            opacity:1
-        });
-        xrControls.mesh.visible = false;
+                            let teardrop = gltf.scene.children[0];
+                            teardrop.scale.setScalar(0.2)
+                            teardrop.position.y = 1.5;
+                            scope.updateQueue.push((t,dt)=>{
+                                teardrop.rotation.z += 0.001 * dt
+                            })
+                            obj.add(teardrop)
+                        })
 
-        xrControlMenu.mesh.add(desktopControls.mesh)
-        xrControlMenu.mesh.add(xrControls.mesh)
-        desktopControls.mesh.position.set(-.2,0,0.01)
-        xrControls.mesh.position.set(-.20,0,0.01)
+                        // Parse and set the position from coordinates
+                        let pos_str = artifact[6].slice(1,-1).split(",");
+                        let pos = []
+                        pos_str.forEach(n=>pos.push(parseFloat(n)));
+                        obj.position.set(...pos);
 
-        // Create slider
+                        scope.artifacts.push(obj);
+                        scope.addObjectToScene(obj);
 
-        let dateText = createDOMElemWithText("h2", "Any Date");
-        dateText.style.color = "white";
-        dateText.style.margin = "0px"
-        dateText.style.fontSize = "11px";
-        this.dateText = dateText;
-        let xrDate = new HTML2D(dateText, {width:1.5,height:0.15})
-        this.xrDate = xrDate;
-        xrControlMenu.mesh.add(xrDate.mesh)
-        xrDate.mesh.position.set(.03,.4,.005);
+                        // Add to dates
+                        if (Array.from(scope.artifactDates.keys()).includes(artifact[5])) {
+                            scope.artifactDates.get(artifact[5]).push(obj);
+                        }
+                        else {
+                            scope.artifactDates.set(artifact[5], [obj]);
+                        }
 
-        let slider = document.createElement("div");
-        slider.style.height = "3px"
-        slider.style.width = "100px"
-        slider.style.background = "rgba(255,255,255,1)";
+                        r();
 
-        let sliderPtr = createDOMElemWithText("div", "")
-        sliderPtr.style.height = "14px";
-        sliderPtr.style.width = "11px";
-        sliderPtr.style.background = "rgba(200,200,200,1)";
-        sliderPtr.style.borderRadius = "4px";
-        sliderPtr.style.boxSizing = "border-box";
-        // document.body.append(controlMenu)
+                    }, undefined, e=>console.log("Could not load model at: " + modelLink + ", error: " + e)
+                    );
+                });
+            });
 
-        let xrSlider = new HTML2D(slider, {width:1.5,height:0.18})
-        xrControlMenu.mesh.add(xrSlider.mesh);
-        xrSlider.mesh.position.set(0.05,0.5,0.01);
+            // Add light to main camera
+            scope.mainCamera.add(scope.light);
 
-        let xrSliderPtr = new HTML2D(sliderPtr, {width:0.18,height:0.18})
-        xrSliderPtr.name = "sliderPtr"
-        xrSlider.mesh.add(xrSliderPtr.mesh);
-        xrSliderPtr.mesh.position.set(-.627,0.05,0.1);
-        xrSliderPtr.onHover = e=>{
-            sliderPtr.style.border = "2px solid black";
-            xrSliderPtr.update()
-        }
-        xrSliderPtr.onEndHover = e=>{
-            sliderPtr.style.border = "none";
-            xrSliderPtr.update()
-        }
+            // add camera to player
+            scope.player = new THREE.Object3D()
+            scope.removeObjectFromScene(scope.mainCamera)
+            scope.player.add(scope.mainCamera);
+            scope.player.camera = scope.mainCamera;
+            scope.addObjectToScene(scope.player);
 
-        // Set raycast objects
-        this.controls.raycastObjects = this.raycastObjects;
+            scope.controls = new Controller(scope.player, scope.scene, scope.renderer);
 
-        // Set up callbacks
-        this.controls.addEventListener("onstartxr", e=>{
-            desktopControls.mesh.visible = false;
-            xrControls.mesh.visible = true;
-        })
-        this.controls.addEventListener("onleavexr", e=>{
-            desktopControls.mesh.visible = true;
+            // Add control menu for player
+            let controlMenu = document.createElement("div");
+            controlMenu.style.height = "130px"
+            controlMenu.style.width = "100px"
+            controlMenu.style.background = "rgba(10,10,100,0.7)";
+            controlMenu.style.color = "white";
+            controlMenu.style.padding = "5px";
+            controlMenu.style.display = "flex";
+            // controlMenu.style.justifyContent = "center";
+            controlMenu.style.flexDirection = "column";
+            controlMenu.style.alignItems = "center";
+
+            let _t = createDOMElemWithText("h2", "Controls")
+            _t.style.margin = "0px"
+            _t.style.fontSize = "14px";
+            controlMenu.appendChild(_t)
+            // document.body.append(controlMenu)
+
+            let xrControlMenu = new HTML2D(controlMenu, {width:1.5,height:2.0})
+            scope.player.add(xrControlMenu.mesh);
+            xrControlMenu.mesh.position.set(0,0,-1);
+            xrControlMenu.mesh.rotateX(-Math.PI/4)
+
+            // Add to raycast objects
+            scope.raycastObjects.push(xrControlMenu.mesh)
+
+            let desktopControls = new Block2D({
+                width:.8,
+                height:0.5,
+                x:0,
+                y:0,
+                z:-1,
+                src:"/img/desktop_nav.png",
+                transparent:true,
+                opacity:1
+            });
+            let xrControls = new Block2D({
+                width:1,
+                height:0.5,
+                x:0,
+                y:0,
+                z:-1,
+                src:"/img/xr_nav.png",
+                transparent:true,
+                opacity:1
+            });
             xrControls.mesh.visible = false;
-        })
 
-        this.lastHoveredMesh = null;
-        this.xrSliderPtr = xrSliderPtr;
-        this.isHoveringSliderPtr = false;
+            xrControlMenu.mesh.add(desktopControls.mesh)
+            xrControlMenu.mesh.add(xrControls.mesh)
+            desktopControls.mesh.position.set(-.2,0,0.01)
+            xrControls.mesh.position.set(-.20,0,0.01)
 
-        this.controls.addEventListener("onhover", e=>{
+            // Create slider
 
-            if (e.intersects.length > 0) {
+            let dateText = createDOMElemWithText("h2", "Any Date");
+            dateText.style.color = "white";
+            dateText.style.margin = "0px"
+            dateText.style.fontSize = "11px";
+            scope.dateText = dateText;
+            let xrDate = new HTML2D(dateText, {width:1.5,height:0.15})
+            scope.xrDate = xrDate;
+            xrControlMenu.mesh.add(xrDate.mesh)
+            xrDate.mesh.position.set(.03,.4,.005);
 
-                let topMesh = e.intersects[0].object;
+            let slider = document.createElement("div");
+            slider.style.height = "3px"
+            slider.style.width = "100px"
+            slider.style.background = "rgba(255,255,255,1)";
 
-                if (topMesh == this.lastHoveredMesh) {
-                    // Not much to do here
-                }
-                else {
+            let sliderPtr = createDOMElemWithText("div", "")
+            sliderPtr.style.height = "14px";
+            sliderPtr.style.width = "11px";
+            sliderPtr.style.background = "rgba(200,200,200,1)";
+            sliderPtr.style.borderRadius = "4px";
+            sliderPtr.style.boxSizing = "border-box";
+            // document.body.append(controlMenu)
 
+            let xrSlider = new HTML2D(slider, {width:1.5,height:0.18})
+            xrControlMenu.mesh.add(xrSlider.mesh);
+            xrSlider.mesh.position.set(0.05,0.5,0.01);
 
-                    if (topMesh.uiElement) {
+            let xrSliderPtr = new HTML2D(sliderPtr, {width:0.18,height:0.18})
+            xrSliderPtr.name = "sliderPtr"
+            xrSlider.mesh.add(xrSliderPtr.mesh);
+            xrSliderPtr.mesh.position.set(-.627,0.05,0.1);
+            xrSliderPtr.onHover = e=>{
+                sliderPtr.style.border = "2px solid black";
+                xrSliderPtr.update()
+            }
+            xrSliderPtr.onEndHover = e=>{
+                sliderPtr.style.border = "none";
+                xrSliderPtr.update()
+            }
 
-                        if (topMesh.uiElement.name === "sliderPtr") {
-                            this.isHoveringSliderPtr = true;
-                        }
-                        topMesh.uiElement._onHover();
+            // Set raycast objects
+            scope.controls.raycastObjects = scope.raycastObjects;
+
+            // Set up callbacks
+            scope.controls.addEventListener("onstartxr", e=>{
+                desktopControls.mesh.visible = false;
+                xrControls.mesh.visible = true;
+            })
+            scope.controls.addEventListener("onleavexr", e=>{
+                desktopControls.mesh.visible = true;
+                xrControls.mesh.visible = false;
+            })
+
+            scope.lastHoveredMesh = null;
+            scope.xrSliderPtr = xrSliderPtr;
+            scope.isHoveringSliderPtr = false;
+
+            scope.controls.addEventListener("onhover", e=>{
+
+                if (e.intersects.length > 0) {
+
+                    let topMesh = e.intersects[0].object;
+
+                    if (topMesh == scope.lastHoveredMesh) {
+                        // Not much to do here
                     }
+                    else {
 
-                    if (this.lastHoveredMesh != null) {
 
-                        if (this.lastHoveredMesh.uiElement) {
-                            if (this.lastHoveredMesh.uiElement.name === "sliderPtr") {
+                        if (topMesh.uiElement) {
 
-                                this.isHoveringSliderPtr = false;
+                            if (topMesh.uiElement.name === "sliderPtr") {
+                                scope.isHoveringSliderPtr = true;
                             }
-                            this.lastHoveredMesh.uiElement._onEndHover();
+                            topMesh.uiElement._onHover();
+                        }
+
+                        if (scope.lastHoveredMesh != null) {
+
+                            if (scope.lastHoveredMesh.uiElement) {
+                                if (scope.lastHoveredMesh.uiElement.name === "sliderPtr") {
+
+                                    scope.isHoveringSliderPtr = false;
+                                }
+                                scope.lastHoveredMesh.uiElement._onEndHover();
+                            }
                         }
                     }
-                }
 
-                this.lastHoveredMesh = topMesh;
-            }
-            else {
-
-                if (this.lastHoveredMesh == null) {
-
+                    scope.lastHoveredMesh = topMesh;
                 }
                 else {
 
-                    if (this.lastHoveredMesh.uiElement) {
-                        if (this.lastHoveredMesh.uiElement.name === "sliderPtr") {
-                            this.isHoveringSliderPtr = false;
-                        }
-                        this.lastHoveredMesh.uiElement._onEndHover();
-                    }
-                }
+                    if (scope.lastHoveredMesh == null) {
 
-                this.lastHoveredMesh = null;
-            }
+                    }
+                    else {
+
+                        if (scope.lastHoveredMesh.uiElement) {
+                            if (scope.lastHoveredMesh.uiElement.name === "sliderPtr") {
+                                scope.isHoveringSliderPtr = false;
+                            }
+                            scope.lastHoveredMesh.uiElement._onEndHover();
+                        }
+                    }
+
+                    scope.lastHoveredMesh = null;
+                }
+            });
+
+            resolve();
         });
+
+        // Finish loading
+        this.domElem.parentElement.removeChild(loadingDOM)
+        this.ready = true;
 
     }
 
     update() {
+
+        if (!this.ready) return;
 
         // let v = new THREE.Vector3()
         // this.player.camera.getWorldDirection(v)
