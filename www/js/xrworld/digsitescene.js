@@ -335,9 +335,20 @@ export default class DigSiteScene extends XRWorld {
 
             scope.controls.addEventListener("onhover", e=>{
 
-                if (e.intersects.length > 0) {
+                let intersects = e.intersects;
 
-                    let topMesh = e.intersects[0].object;
+                intersects.forEach(i=>{
+                    if (!i.object.visible || !i.object.parent.visible) {
+                        i._visible = false;
+                    }
+                    else
+                        i._visible = true;
+                })
+                intersects = intersects.filter(i=>i._visible)
+
+                if (intersects.length > 0) {
+
+                    let topMesh = intersects[0].object;
 
                     if (topMesh == scope.lastHoveredMesh) {
                         // Not much to do here
