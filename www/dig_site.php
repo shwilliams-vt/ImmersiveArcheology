@@ -50,7 +50,7 @@
                     $array[] = $row;
                 }
 
-                echo "<div id='result'>";
+                echo "<div id='result' style='display:none'>";
                 echo json_encode($array);
                 echo "</div>";
             }
@@ -86,12 +86,15 @@
     import CommentWidget from "/js/commentwidget.js";
 
     let res = document.querySelector("#result");
+
     if (!res) {
 
 
     }
     else {
 
+        // Show as is hidden initially
+        res.style.display = "flex";
         let result = parseTable(res.innerText)[0];
 
         res.innerHTML = "";

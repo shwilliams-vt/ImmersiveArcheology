@@ -45,7 +45,7 @@
                     $array[] = $row;
                 }
 
-                echo "<div id='result_dig_site'>";
+                echo "<div id='result_dig_site' style='display:none'>";
                 echo json_encode($array);
                 echo "</div>";
             }
@@ -73,7 +73,7 @@
                 $array[] = $row;
             }
 
-            echo "<div id='result_artifacts'>";
+            echo "<div id='result_artifacts' style='display:none'>";
             echo json_encode($array);
             echo "</div>";
             
@@ -112,6 +112,10 @@
 
         let digSite = parseTable(result_dig_site.innerText)[0];
         let artifacts = parseTable(result_artifacts.innerText);
+
+        // Show dig site
+        result_dig_site.style.display = "block";
+        result_artifacts.style.display = "flex";
 
         result_dig_site.innerHTML = "";
         result_artifacts.innerHTML = "";

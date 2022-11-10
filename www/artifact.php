@@ -50,7 +50,7 @@
                     $array[] = $row;
                 }
 
-                echo "<div id='result'>";
+                echo "<div id='result' style='display:none'>";
                 echo json_encode($array);
                 echo "</div>";
             }
@@ -92,6 +92,8 @@
     }
     else {
 
+        // Show as is hidden initially
+        res.style.display = "flex";
         let result = parseTable(res.innerText)[0];
 
         res.innerHTML = "";
