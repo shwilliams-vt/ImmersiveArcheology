@@ -466,12 +466,16 @@ export default class Controller {
         }
 
         // Update to world position if in xr
+        let guideStart = new Vector3();
+        guideStart.copy(firstPoint);
+        let guideStop = new Vector3();
+        guideStop.copy(this.LAST_RAYCAST_LOC);
         if (this.IN_XR) {
-            firstPoint.add(this.player.position);
-            this.LAST_RAYCAST_LOC.add(this.player.position);
+            guideStart.add(this.player.position);
+            guideStop.add(this.player.position);
         }
 
-        this.guideLine.geometry.setFromPoints( [firstPoint, this.LAST_RAYCAST_LOC] );
+        this.guideLine.geometry.setFromPoints( [guideStart, guideStop] );
 
         this.dispatchEvent("onhover", {intersects:intersects})
     }
