@@ -352,7 +352,7 @@ export default class Controller {
                 x_pos = leftGamepad.axes[leftMultiAxes ?  2 : 0 ];
                 z_pos = leftGamepad.axes[leftMultiAxes ?  3 : 1 ];
 
-                y_pos = rightGamepad.axes[rightMultiAxes ?  3 : 1 ];
+                y_pos = -rightGamepad.axes[rightMultiAxes ?  3 : 1 ];
             }
             
         }
@@ -463,6 +463,12 @@ export default class Controller {
             p.multiplyScalar(this.RAYCASTER.far)
             p.add(this.RAYCASTER.ray.origin);
             this.LAST_RAYCAST_LOC.copy(p)
+        }
+
+        // Update to world position if in xr
+        if (this.IN_XR) {
+            firstPoint.add(this.player.position);
+            this.LAST_RAYCAST_LOC.add(this.player.position);
         }
 
         this.guideLine.geometry.setFromPoints( [firstPoint, this.LAST_RAYCAST_LOC] );
