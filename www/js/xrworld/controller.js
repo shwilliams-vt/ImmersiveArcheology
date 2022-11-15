@@ -466,9 +466,9 @@ export default class Controller {
         }
 
         // Update to world position if in xr
-        let guideStart = new Vector3();
+        let guideStart = new THREE.Vector3();
         guideStart.copy(firstPoint);
-        let guideStop = new Vector3();
+        let guideStop = new THREE.Vector3();
         guideStop.copy(this.LAST_RAYCAST_LOC);
         if (this.IN_XR) {
             guideStart.add(this.player.position);

@@ -62,6 +62,10 @@ export default class DigSiteScene extends XRWorld {
         // Set state to unready
         this.ready = false;
 
+        // Player
+        scope.player = new THREE.Object3D()
+        let spawnPos = new THREE.Vector3();
+
         // Async load
         await new Promise(async resolve=>{
             
@@ -87,6 +91,13 @@ export default class DigSiteScene extends XRWorld {
                     gltfloader.load(digSite[3], async gltf=>{
 
                         let scene = gltf.scene.children[0];
+
+                        // From program set z axis as up
+                        scene.up.set(0,0,1);
+                        scene.rotateX(Math.PI / 2); 
+
+                        let mid = HELPERS.getMeshMidpoint(scene);
+                        spawnPos = mid;
 
                         scope.addObjectToScene(scene);
                         r();
@@ -154,7 +165,7 @@ export default class DigSiteScene extends XRWorld {
 
                         // Artifact model
                         let aModel = gltf.scene.children[0]
-                        HELPERS.normalizeModel(aModel);
+                        HELPERS.normalizeModelScale(aModel);
                         let scene = new MeshWrapper(aModel);
 
                         // Add click/hover events
@@ -178,7 +189,7 @@ export default class DigSiteScene extends XRWorld {
 
                             let teardrop = gltf.scene.children[0];
                             teardrop.scale.setScalar(0.2)
-                            teardrop.position.y = 1.5;
+                            teardrop.position.y = 2;
                             scope.updateQueue.push((t,dt)=>{
                                 teardrop.rotation.z += 0.001 * dt
                             })
@@ -213,7 +224,6 @@ export default class DigSiteScene extends XRWorld {
             scope.mainCamera.add(scope.light);
 
             // add camera to player
-            scope.player = new THREE.Object3D()
             scope.removeObjectFromScene(scope.mainCamera)
             scope.player.add(scope.mainCamera);
             scope.player.camera = scope.mainCamera;
@@ -400,6 +410,10 @@ export default class DigSiteScene extends XRWorld {
             resolve();
         });
 
+        // Move player to the spawn point
+        console.log(spawnPos)
+        this.player.position.copy(spawnPos)
+
         // Finish loading
         this.domElem.parentElement.removeChild(loadingDOM)
         this.ready = true;
@@ -428,14 +442,23 @@ export default class DigSiteScene extends XRWorld {
         if (!this.__lastClick)
             this.__lastClick = 0;
 
-        if (performance.now() - this.__lastClick > 500 && this.controls.pointerIsDown()) {
-            if (this.lastHoveredMesh) {
+        if (!this.__hasClicked)
+            this.__hasClicked = false;
 
-                if (this.lastHoveredMesh.uiElement) 
-                    this.lastHoveredMesh.uiElement._onClick();
+        if (this.controls.pointerIsDown()) {
+            if (!this.__hasClicked && performance.now() - this.__lastClick > 500) {
+                if (this.lastHoveredMesh) {
+    
+                    if (this.lastHoveredMesh.uiElement) 
+                        this.lastHoveredMesh.uiElement._onClick();
+                }
+    
+                this.__lastClick = performance.now();
+                this.__hasClicked = true;
             }
-
-            this.__lastClick = performance.now();
+        }
+        else {
+            this.__hasClicked = false;
         }
         
     }

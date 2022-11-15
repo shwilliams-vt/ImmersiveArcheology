@@ -38,10 +38,10 @@ export default class ArtifactScene extends XRWorld {
 
             let scene = gltf.scene.children[0];
 
-            HELPERS.normalizeModel(scene);
-            console.log(scene)
+            HELPERS.normalizeModelScale(scene);
+            HELPERS.normalizeModelPosition(scene);
             
-            this.cube.add(gltf.scene);
+            this.cube.add(scene);
         }, undefined, e=>console.log("Could not load model at: " + modelLink + ", error: " + e)
         );
 

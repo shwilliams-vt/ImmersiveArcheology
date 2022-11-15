@@ -1,29 +1,51 @@
 import { THREE }  from "./xrworld.js";
 
+export function createBoxMesh(box) {
+    const dimensions = new THREE.Vector3().subVectors( box.max, box.min );
+    const boxGeo = new THREE.BoxBufferGeometry(dimensions.x, dimensions.y, dimensions.z);
 
-export function normalizeModel(model) {
+    // move new mesh center so it's aligned with the original object
+    const matrix = new THREE.Matrix4().setPosition(dimensions.addVectors(box.min, box.max).multiplyScalar( 0.5 ));
+    boxGeo.applyMatrix4(matrix);
+
+    // make a mesh
+    return new THREE.Mesh(boxGeo, new THREE.MeshBasicMaterial( {color:0xff0000, transparent:true, opacity:0.5}))
+}
+
+export function normalizeModelScale(model) {
 
     let box = new THREE.Box3().setFromObject(model);
-    
-    //console.log(box);
-
-    // let max = Math.max(...[Math.abs(box.max.x), Math.abs(box.min.x), 
-    //                        Math.abs(box.max.y), Math.abs(box.min.y), 
-    //                        Math.abs(box.max.z), Math.abs(box.min.z)]);
-
     let max = Math.max(...Object.values(box.max));
 
     let scale = 1/max;
     model.scale.setScalar(scale);
+}
+
+export function normalizeModelPosition(model) {
+
+    let box = new THREE.Box3().setFromObject(model);
 
     // Normalize the position
-    //console.log(model.position);
     model.position.set(
-        scale*(box.max.x + box.min.x) / 2,
-        -scale*(box.max.y + box.min.y) / 2,
-        scale*(box.max.z + box.min.z) / 2
+        - (box.max.x + box.min.x) / 2,
+        - (box.max.y + box.min.y) / 2,
+        - (box.max.z + box.min.z) / 2
     );
-    //console.log(model.position);
+
+    // let m = createBoxMesh(box);
+    // model.add(m)
+    
+}
+
+export function getMeshMidpoint(mesh) {
+    let box = new THREE.Box3().setFromObject(mesh);
+
+    // Normalize the position
+    return new THREE.Vector3(
+        (box.max.x + box.min.x) / 2,
+        (box.max.y + box.min.y) / 2,
+        (box.max.z + box.min.z) / 2
+    );
 }
 
 // https://sbcode.net/threejs/gravity-centre/

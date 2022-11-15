@@ -71,9 +71,6 @@
         echo ''; // do nothing
 
     mysqli_close($connection);
-
-
-
     ?>
 
 </body>
@@ -99,7 +96,7 @@
 
         res.innerHTML = "";
 
-        res.appendChild(createDOMElemWithText("h2", "Dig_site Name: " + result[1]));
+        res.appendChild(createDOMElemWithText("h2", "Dig Site Name: " + result[1]));
         res.appendChild(createDOMElemWithText("p", "Description: " + result[2]));
         let xrDiv = createDOMElem("div");
         xrDiv.style.width = "50vw";
@@ -107,14 +104,19 @@
         xrDiv.style.border = "4px solid #aaa";
         xrDiv.style.overflow = "hidden";
         res.appendChild(new ArtifactScene(xrDiv, result[3]).parentElem);
-        res.appendChild(createDOMElemWithText("p", "Date Begin: " + result[4]));
-        res.appendChild(createDOMElemWithText("p", "Date End: " + result[5]));
-        res.appendChild(createDOMElemWithText("p", "Dig_site ID: " + result[0]));
+
+        // Info block
+        let info = createDOMElemWithText("div", "");
+        info.classList.add("infoblock")
+        info.appendChild(createDOMElemWithText("p", "Date Begin: " + result[4]));
+        info.appendChild(createDOMElemWithText("p", "Date End: " + result[5]));
+        info.appendChild(createDOMElemWithText("p", "Site ID: " + result[0]));
+        res.appendChild(info);
 
         // Add thing for XR
         let xr_btn = createDOMElemWithText("a", "Visit in XR");
         xr_btn.setAttribute("href", "/xr.php?id="+result[0]);
-        res.appendChild(xr_btn);
+        info.appendChild(xr_btn);
 
 
         // Load comments

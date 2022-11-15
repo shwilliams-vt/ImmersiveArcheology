@@ -106,10 +106,14 @@
         xrDiv.style.border = "4px solid #aaa";
         xrDiv.style.overflow = "hidden";
         res.appendChild(new ArtifactScene(xrDiv, result[4]).parentElem);
-        res.appendChild(createDOMElemWithText("p", "Date excavated: " + result[5]));
-        res.appendChild(createDOMElemWithText("p", "Artifact ID: " + result[0]));
-        res.appendChild(createDOMElemWithText("p", "Site ID: " + result[1]));
 
+        // Info block
+        let info = createDOMElemWithText("div", "");
+        info.classList.add("infoblock");
+        info.appendChild(createDOMElemWithText("p", "Date excavated: " + result[5]));
+        info.appendChild(createDOMElemWithText("p", "Artifact ID: " + result[0]));
+        info.appendChild(createDOMElemWithText("p", "Site ID: " + result[1]));
+        res.appendChild(info);
 
         // Load comments
         let commentDiv = document.createElement("div");
