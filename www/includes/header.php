@@ -4,4 +4,5 @@
 <div id="header">
     <a href="/">Home</a>
     <a href="/upload/">Upload</a>
+    <a href="/about.php">About</a>
 </div>
