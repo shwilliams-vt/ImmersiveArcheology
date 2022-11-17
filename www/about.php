@@ -29,7 +29,7 @@
 
         <h2 id="acknowledgements">Acknowledgements</h2>
         <p>
-            This project is for the CS 4944 Hypertext, Multimedia and Information Access Capstone.
+            This project is for the CS 4624 Hypertext, Multimedia and Information Access Capstone.
         </p>
         <p>
             In collaboration with Dr. Todd Ogle of Virginia Tech, we, Sam Williams and Enmu Liu, began working on this Immersive Archeology project in the Fall of 2022 semester. The goal of this project is to provide users with an immersive experience in both a desktop setting and in the Oculus Quest.  
