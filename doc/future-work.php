@@ -10,7 +10,9 @@
 <body>
 
 <?php include($_SERVER['DOCUMENT_ROOT']."/header.php"); ?>
-
+<div id="main">
+    <!--- Content goes here -->
+</div>
 
 </body>
 </html>

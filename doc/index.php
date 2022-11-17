@@ -12,5 +12,12 @@
 <?php include($_SERVER['DOCUMENT_ROOT']."/header.php"); ?>
 
 
+<div id="main">
+    <h2>
+        Home
+    </h2>
+
+    This is the home page for the documentation of the Immersive Archeology project. Please click one of the panels in the navigation panels on the left side of the screen to get started (we recommend starting with <a href="/overview.php">Overview</a>)
+</div>
 </body>
 </html>
