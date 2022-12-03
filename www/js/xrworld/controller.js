@@ -436,8 +436,29 @@ export default class Controller {
 
                 let tempMatrix = new THREE.Matrix4();
                 let raySpace = this.renderer.xr.getController(rightController.controllerNumber)
-                tempMatrix.extractRotation(raySpace.matrix);
-                this.RAYCASTER.ray.origin.setFromMatrixPosition(raySpace.matrix);
+                let controllerMat = new THREE.Matrix4();
+                controllerMat.copy(raySpace.matrix);
+
+                // Decompose the controller matrix
+                let pos = new THREE.Vector3(), rot = new THREE.Quaternion(), scale = new THREE.Vector3();
+                controllerMat.decompose(pos, rot, scale);
+
+                // Apply player rotation and position
+                pos.applyEuler(this.player.rotation)
+                pos.add(this.player.position);
+
+                // Rotate the rotation of the controller by the player rotation
+                let playerRot = new THREE.Quaternion().setFromEuler(this.player.rotation);
+                playerRot.multiply(rot);
+                rot.copy(playerRot)
+
+                // Recompose matrix
+                controllerMat.compose(pos, rot, scale);
+
+                // Extract the orientation of the updated controller matrix
+                tempMatrix.extractRotation(controllerMat);
+                // Update the raycast information
+                this.RAYCASTER.ray.origin.setFromMatrixPosition(controllerMat);
                 this.RAYCASTER.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
 
                 firstPoint.copy(this.RAYCASTER.ray.origin);
@@ -465,15 +486,11 @@ export default class Controller {
             this.LAST_RAYCAST_LOC.copy(p)
         }
 
-        // Update to world position if in xr
+        // For understanding -- the points on the guide line
         let guideStart = new THREE.Vector3();
         guideStart.copy(firstPoint);
         let guideStop = new THREE.Vector3();
         guideStop.copy(this.LAST_RAYCAST_LOC);
-        if (this.IN_XR) {
-            guideStart.add(this.player.position);
-            guideStop.add(this.player.position);
-        }
 
         this.guideLine.geometry.setFromPoints( [guideStart, guideStop] );
 
